@@ -1,0 +1,13 @@
+{
+    "provider": "aliyun",
+    "aliyun": {
+        "access_key_id": "",
+        "access_key_secret": "",
+        "endpoint": "ocr-api.cn-hangzhou.aliyuncs.com",
+        "scene": "general"
+    },
+    "baidu": {
+        "api_key": "",
+        "secret_key": ""
+    }
+}

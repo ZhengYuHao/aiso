@@ -1,0 +1,27 @@
+系统部署配置文档
+
+一、数据库连接信息
+MySQL主库：mysql://admin:P@ssw0rd123@10.20.30.40:3306/production_db
+Redis缓存：redis://10.20.30.41:6379
+MongoDB：mongodb://dbuser:Secret123@172.16.1.100:27017/app_data
+
+二、API密钥配置
+OpenAI API Key: sk-abcdefghijklmnopqrstuvwxyz1234567890ABCDEF
+GitHub Token: ghp_1234567890abcdefghijklmnopqrstuvwxyz
+AWS Access Key: AKIAIOSFODNN7EXAMPLE01
+api_key = "a1b2c3d4e5f6g7h8i9j0k1l2m3n4"
+
+三、服务器配置
+生产环境Web服务器：10.20.30.50:8080
+应用部署路径：/opt/deploy/app/production/v2.3.1
+prod-server-01 配置已更新
+staging-db-02 需要重启
+
+四、登录凭证
+后台管理密码：admin_P@ss2024!
+SSH密钥：
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PbnGy...
+-----END RSA PRIVATE KEY-----
+
+password = "Super$ecret!2024"

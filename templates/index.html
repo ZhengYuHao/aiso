@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型输入内容安全检测系统</title>
+<style>
+/* ========== RESET & VARS ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0e14;
+  --surface: #141722;
+  --surface-2: #1a1e2e;
+  --surface-3: #232840;
+  --border: #2a2f45;
+  --border-light: #363d5a;
+  --text: #e0e4f0;
+  --text-dim: #8890a8;
+  --text-muted: #5a6280;
+  --accent: #4f8cff;
+  --accent-dim: #3a6cd4;
+  --red: #ff4d6a;
+  --red-bg: rgba(255,77,106,0.08);
+  --orange: #ff8c42;
+  --orange-bg: rgba(255,140,66,0.08);
+  --yellow: #ffc44d;
+  --yellow-bg: rgba(255,196,77,0.08);
+  --green: #3ddc84;
+  --green-bg: rgba(61,220,132,0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --font: 'Segoe UI', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== LAYOUT ========== */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ========== HEADER ========== */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+.header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  margin: 20px auto 0;
+  border-radius: 2px;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #e0e4f0, #4f8cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header .subtitle {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ========== UPLOAD ZONE ========== */
+.upload-zone {
+  border: 2px dashed var(--border-light);
+  border-radius: var(--radius);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.upload-zone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(79,140,255,0.04), transparent 70%);
+  pointer-events: none;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.upload-zone.dragover {
+  border-color: var(--green);
+}
+.upload-icon {
+  width: 56px; height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s;
+}
+.upload-zone:hover .upload-icon { transform: translateY(-4px); }
+.upload-icon svg { width: 28px; height: 28px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+.upload-title { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+.upload-hint { font-size: 13px; color: var(--text-muted); }
+.upload-formats { margin-top: 12px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.format-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--surface-3);
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+#file-input { display: none; }
+
+/* ========== PROGRESS ========== */
+.progress-section {
+  display: none;
+  margin-top: 24px;
+}
+.progress-section.active { display: block; }
+.progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.progress-text {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ========== SUMMARY CARDS ========== */
+.summary-section {
+  display: none;
+  margin-top: 32px;
+}
+.summary-section.active { display: block; }
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.summary-card:hover { transform: translateY(-2px); }
+.summary-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.summary-card .value { font-size: 32px; font-weight: 700; margin: 8px 0 4px; font-family: var(--mono); }
+.summary-card .detail { font-size: 12px; color: var(--text-dim); }
+
+.summary-card.verdict-BLOCK { border-color: var(--red); }
+.summary-card.verdict-BLOCK .value { color: var(--red); }
+.summary-card.verdict-WARNING { border-color: var(--orange); }
+.summary-card.verdict-WARNING .value { color: var(--orange); }
+.summary-card.verdict-NOTICE { border-color: var(--yellow); }
+.summary-card.verdict-NOTICE .value { color: var(--yellow); }
+.summary-card.verdict-PASS { border-color: var(--green); }
+.summary-card.verdict-PASS .value { color: var(--green); }
+
+/* ========== RESULTS TABLE ========== */
+.results-section {
+  display: none;
+  margin-top: 8px;
+}
+.results-section.active { display: block; }
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+}
+.file-result-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.file-header:hover { background: var(--surface-3); }
+.file-name { font-weight: 600; font-size: 15px; }
+.file-meta { font-size: 12px; color: var(--text-muted); }
+
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.verdict-BLOCK { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255,77,106,0.2); }
+.verdict-WARNING { background: var(--orange-bg); color: var(--orange); border: 1px solid rgba(255,140,66,0.2); }
+.verdict-NOTICE { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(255,196,77,0.2); }
+.verdict-PASS { background: var(--green-bg); color: var(--green); border: 1px solid rgba(61,220,132,0.2); }
+.verdict-ERROR { background: rgba(150,150,150,0.1); color: #aaa; border: 1px solid rgba(150,150,150,0.2); }
+
+.file-body { padding: 0; }
+.file-body.collapsed { display: none; }
+
+/* Issues table */
+.issues-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.issues-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+.issues-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.issues-table tr:last-child td { border-bottom: none; }
+.issues-table tr:hover td { background: rgba(79,140,255,0.03); }
+
+.severity-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.severity-critical { background: var(--red); }
+.severity-high { background: var(--orange); }
+.severity-medium { background: var(--yellow); }
+.severity-low { background: #6a7fdb; }
+
+.category-label {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.cat-classified { background: var(--red-bg); color: var(--red); }
+.cat-sensitive { background: var(--orange-bg); color: var(--orange); }
+.cat-restricted { background: var(--yellow-bg); color: var(--yellow); }
+.cat-risky { background: rgba(106,127,219,0.1); color: #6a7fdb; }
+
+.issue-content {
+  max-width: 280px;
+  word-break: break-all;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.issue-reason {
+  max-width: 220px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.issue-suggestion {
+  max-width: 220px;
+  font-size: 12px;
+  color: var(--accent);
+  line-height: 1.5;
+}
+
+/* No issues banner */
+.no-issues {
+  padding: 32px;
+  text-align: center;
+  color: var(--green);
+  font-size: 15px;
+}
+.no-issues svg { width: 40px; height: 40px; margin-bottom: 8px; stroke: var(--green); fill: none; }
+
+/* Error state */
+.file-error {
+  padding: 20px;
+  color: var(--red);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ========== DETAIL MODAL ========== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 860px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: var(--surface-3);
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: var(--border-light); color: var(--text); }
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+.log-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.log-block h4 {
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.log-item {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  line-height: 1.6;
+}
+.log-item strong { color: var(--text); }
+.log-json {
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  color: var(--text-dim);
+  background: var(--bg);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .app { padding: 16px; }
+  .header h1 { font-size: 22px; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .issues-table { font-size: 12px; }
+  .issues-table th, .issues-table td { padding: 8px 10px; }
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse { animation: pulse 1.5s ease infinite; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>大模型输入内容安全检测系统</h1>
+    <div class="subtitle">上传文件 → 自动检测涉密 / 敏感 / 受限 / 风险内容 → 精准定位并给出处理建议</div>
+  </div>
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="upload-zone">
+    <div class="upload-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    </div>
+    <div class="upload-title">点击选择文件 或 拖拽文件到此区域</div>
+    <div class="upload-hint">支持多文件同时上传，单文件 ≤ 5MB</div>
+    <div class="upload-formats">
+      <span class="format-tag">.docx</span>
+      <span class="format-tag">.txt</span>
+      <span class="format-tag">.pdf</span>
+    </div>
+    <input type="file" id="file-input" multiple accept=".docx,.txt,.pdf">
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section" id="progress-section">
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">正在上传文件…</div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-section" id="summary-section">
+    <div class="summary-grid" id="summary-grid"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="results-section">
+    <div class="section-title">检测详情</div>
+    <div id="results-container"></div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">检测日志</h3>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ========== STATE ==========
+let allResults = [];
+
+// ========== DOM ==========
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+const progressSection = document.getElementById('progress-section');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const summarySection = document.getElementById('summary-section');
+const summaryGrid = document.getElementById('summary-grid');
+const resultsSection = document.getElementById('results-section');
+const resultsContainer = document.getElementById('results-container');
+const modalOverlay = document.getElementById('modal-overlay');
+const modalTitle = document.getElementById('modal-title');
+const modalBody = document.getElementById('modal-body');
+const modalClose = document.getElementById('modal-close');
+
+// ========== UPLOAD EVENTS ==========
+uploadZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files.length > 0) handleFiles(e.target.files);
+});
+
+// Drag & drop
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files);
+});
+
+// Modal
+modalClose.addEventListener('click', () => modalOverlay.classList.remove('active'));
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('active');
+});
+
+// ========== CORE FUNCTIONS ==========
+async function handleFiles(files) {
+  const formData = new FormData();
+  for (const file of files) {
+    formData.append('files', file);
+  }
+
+  // Show progress
+  showProgress();
+
+  try {
+    simulateProgress(0, 70, 1500);
+
+    const resp = await fetch('/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    simulateProgress(70, 90, 300);
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || '请求失败');
+    }
+
+    const data = await resp.json();
+    allResults = data.results || [];
+
+    simulateProgress(90, 100, 200);
+    setTimeout(() => {
+      hideProgress();
+      renderSummary(allResults);
+      renderResults(allResults);
+    }, 300);
+
+  } catch (err) {
+    hideProgress();
+    alert('检测失败: ' + err.message);
+  }
+
+  // Reset file input
+  fileInput.value = '';
+}
+
+function showProgress() {
+  progressSection.classList.add('active');
+  progressFill.style.width = '0%';
+  progressText.textContent = '正在上传并检测…';
+  summarySection.classList.remove('active');
+  resultsSection.classList.remove('active');
+}
+
+function hideProgress() {
+  progressSection.classList.remove('active');
+}
+
+function simulateProgress(from, to, duration) {
+  const start = performance.now();
+  const step = () => {
+    const elapsed = performance.now() - start;
+    const pct = Math.min(from + (to - from) * (elapsed / duration), to);
+    progressFill.style.width = pct + '%';
+    if (pct < to) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+
+  if (to <= 30) progressText.textContent = '正在上传文件…';
+  else if (to <= 70) progressText.textContent = '正在执行安全检测…';
+  else if (to <= 90) progressText.textContent = '正在生成检测报告…';
+  else progressText.textContent = '检测完成！';
+}
+
+// ========== RENDER SUMMARY ==========
+function renderSummary(results) {
+  summarySection.classList.add('active');
+  summarySection.classList.add('fade-in');
+
+  const totalFiles = results.length;
+  let totalIssues = 0;
+  let highestVerdict = 'PASS';
+  const verdictPriority = { BLOCK: 0, WARNING: 1, NOTICE: 2, ERROR: 3, PASS: 4 };
+  const categoryCounts = { classified: 0, sensitive: 0, restricted: 0, risky: 0 };
+
+  for (const r of results) {
+    totalIssues += r.issues_count || 0;
+    if (r.issues_by_category) {
+      for (const [cat, count] of Object.entries(r.issues_by_category)) {
+        categoryCounts[cat] = (categoryCounts[cat] || 0) + count;
+      }
+    }
+    const v = r.overall_verdict || 'ERROR';
+    if ((verdictPriority[v] ?? 99) < (verdictPriority[highestVerdict] ?? 99)) {
+      highestVerdict = v;
+    }
+  }
+
+  const verdictLabels = {
+    BLOCK:   { text: '禁止发送', icon: '⛔' },
+    WARNING: { text: '建议脱敏', icon: '⚠️' },
+    NOTICE:  { text: '提示注意', icon: 'ℹ️' },
+    PASS:    { text: '安全通过', icon: '✅' },
+    ERROR:   { text: '检测异常', icon: '❌' },
+  };
+
+  const vl = verdictLabels[highestVerdict] || verdictLabels.ERROR;
+
+  summaryGrid.innerHTML = `
+    <div class="summary-card verdict-${highestVerdict}">
+      <div class="label">总体判定</div>
+      <div class="value">${vl.icon}</div>
+      <div class="detail">${vl.text}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">检测文件</div>
+      <div class="value" style="color:var(--text)">${totalFiles}</div>
+      <div class="detail">份文件</div>
+    </div>
+    <div class="summary-card" style="border-color:${totalIssues > 0 ? 'var(--orange)' : 'var(--border)'}">
+      <div class="label">发现问题</div>
+      <div class="value" style="color:${totalIssues > 0 ? 'var(--orange)' : 'var(--green)'}">${totalIssues}</div>
+      <div class="detail">${totalIssues > 0 ? '项安全问题' : '无安全问题'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">问题分布</div>
+      <div class="value" style="font-size:14px; color:var(--text-dim); margin-top:12px">
+        ${categoryCounts.classified > 0 ? `<span style="color:var(--red)">涉密${categoryCounts.classified}</span> ` : ''}
+        ${categoryCounts.sensitive > 0 ? `<span style="color:var(--orange)">敏感${categoryCounts.sensitive}</span> ` : ''}
+        ${categoryCounts.restricted > 0 ? `<span style="color:var(--yellow)">受限${categoryCounts.restricted}</span> ` : ''}
+        ${categoryCounts.risky > 0 ? `<span style="color:#6a7fdb">风险${categoryCounts.risky}</span>` : ''}
+        ${totalIssues === 0 ? '<span style="color:var(--green)">全部通过</span>' : ''}
+      </div>
+      <div class="detail"></div>
+    </div>
+  `;
+}
+
+// ========== RENDER RESULTS ==========
+function renderResults(results) {
+  resultsSection.classList.add('active');
+  resultsSection.classList.add('fade-in');
+  resultsContainer.innerHTML = '';
+
+  for (let idx = 0; idx < results.length; idx++) {
+    const r = results[idx];
+    const block = document.createElement('div');
+    block.className = 'file-result-block';
+
+    const verdict = r.overall_verdict || 'ERROR';
+    const verdictTexts = {
+      BLOCK: '⛔ 禁止发送', WARNING: '⚠️ 建议脱敏',
+      NOTICE: 'ℹ️ 提示注意', PASS: '✅ 安全通过', ERROR: '❌ 异常',
+    };
+    const vText = verdictTexts[verdict] || verdict;
+    const meta = r.file_info || {};
+
+    block.innerHTML = `
+      <div class="file-header" data-idx="${idx}">
+        <div>
+          <div class="file-name">${escHtml(r.filename || '未知文件')}</div>
+          <div class="file-meta">${meta.format || ''} · ${meta.size_display || ''} · ${meta.char_count || 0}字 · ${r.issues_count || 0}个问题 · ${r.total_time_ms || 0}ms</div>
+        </div>
+        <span class="verdict-badge verdict-${verdict}">${vText}</span>
+      </div>
+      <div class="file-body" id="file-body-${idx}">
+        ${r.error ? `<div class="file-error">${escHtml(r.error)}</div>` : renderIssuesTable(r, idx)}
+      </div>
+    `;
+
+    resultsContainer.appendChild(block);
+
+    // Toggle expand/collapse
+    block.querySelector('.file-header').addEventListener('click', () => {
+      const body = document.getElementById(`file-body-${idx}`);
+      body.classList.toggle('collapsed');
+    });
+  }
+}
+
+function renderIssuesTable(result, fileIdx) {
+  const issues = result.issues || [];
+  if (issues.length === 0) {
+    return `<div class="no-issues">
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke-width="2"/><polyline points="22 4 12 14.01 9 11.01" stroke-width="2"/></svg>
+      <div>未发现安全问题，该文件可安全发送至大模型</div>
+    </div>`;
+  }
+
+  const catLabels = {
+    classified: ['涉密', 'cat-classified'],
+    sensitive: ['敏感', 'cat-sensitive'],
+    restricted: ['受限', 'cat-restricted'],
+    risky: ['风险', 'cat-risky'],
+  };
+  const severityLabels = {
+    critical: ['极高', 'severity-critical'],
+    high: ['高', 'severity-high'],
+    medium: ['中', 'severity-medium'],
+    low: ['低', 'severity-low'],
+  };
+
+  let rows = '';
+  for (let i = 0; i < issues.length; i++) {
+    const issue = issues[i];
+    const [catText, catCls] = catLabels[issue.category] || ['未知', ''];
+    const [sevText, sevCls] = severityLabels[issue.severity] || ['', ''];
+
+    rows += `<tr>
+      <td><span class="severity-dot ${sevCls}"></span>${sevText}</td>
+      <td><span class="category-label ${catCls}">${catText}</span></td>
+      <td class="issue-content" title="${escAttr(issue.content)}">${escHtml(truncate(issue.content, 60))}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${escHtml(issue.location)}</td>
+      <td class="issue-reason">${escHtml(truncate(issue.reason, 80))}</td>
+      <td class="issue-suggestion">${escHtml(truncate(issue.suggestion, 80))}</td>
+    </tr>`;
+  }
+
+  return `
+    <div style="overflow-x:auto">
+    <table class="issues-table">
+      <thead><tr>
+        <th style="width:60px">级别</th>
+        <th style="width:50px">类型</th>
+        <th>命中内容</th>
+        <th style="width:90px">位置</th>
+        <th>原因说明</th>
+        <th>处理建议</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+    <div style="padding:12px 16px; text-align:right; border-top:1px solid var(--border)">
+      <button onclick="showLog(${fileIdx})" style="
+        background:var(--surface-3); color:var(--accent); border:1px solid var(--border-light);
+        border-radius:var(--radius-sm); padding:6px 16px; font-size:13px; cursor:pointer;
+        transition:all 0.2s;
+      " onmouseover="this.style.background='var(--border-light)'" onmouseout="this.style.background='var(--surface-3)'">
+        查看完整检测日志
+      </button>
+    </div>
+  `;
+}
+
+// ========== LOG MODAL ==========
+function showLog(fileIdx) {
+  const result = allResults[fileIdx];
+  if (!result) return;
+
+  modalTitle.textContent = `检测日志 — ${result.filename || '未知文件'}`;
+  modalOverlay.classList.add('active');
+
+  let html = '';
+
+  // File info
+  const meta = result.file_info || {};
+  html += `<div class="log-block">
+    <h4>📄 文件信息</h4>
+    <div class="log-item"><strong>文件名：</strong>${escHtml(result.filename)}</div>
+    <div class="log-item"><strong>格式：</strong>${meta.format || '-'}</div>
+    <div class="log-item"><strong>大小：</strong>${meta.size_display || '-'}</div>
+    <div class="log-item"><strong>字数：</strong>${meta.char_count || '-'}</div>
+    <div class="log-item"><strong>段落数：</strong>${meta.paragraph_count || '-'}</div>
+    <div class="log-item"><strong>检测时间：</strong>${result.detection_time || '-'}</div>
+    <div class="log-item"><strong>耗时：</strong>${result.total_time_ms || 0}ms</div>
+  </div>`;
+
+  // Overall verdict
+  html += `<div class="log-block">
+    <h4>🔍 总体判定</h4>
+    <div class="log-item"><strong>判定结果：</strong><span class="verdict-badge verdict-${result.overall_verdict}">${result.overall_verdict}</span></div>
+    <div class="log-item"><strong>风险等级：</strong>${result.risk_level}</div>
+    <div class="log-item"><strong>问题总数：</strong>${result.issues_count}</div>
+  </div>`;
+
+  // Detection steps
+  const steps = result.detection_steps || [];
+  const stepNames = {
+    'classified_mark_detector': '第一层 · 密级标识检测',
+    'classified_keyword_detector': '第一层 · 涉密关键词检测',
+    'pii_detector': '第二层 · 个人隐私信息检测',
+    'business_sensitive_detector': '第二层 · 商业敏感信息检测',
+    'restricted_content_detector': '第三层 · 受限使用内容检测',
+    'credential_detector': '第四层 · 凭证信息检测',
+    'infrastructure_detector': '第四层 · 内部架构信息检测',
+  };
+
+  for (const step of steps) {
+    const sName = stepNames[step.detector_name] || step.detector_name;
+    const issueCount = step.issues_count || 0;
+    const icon = issueCount > 0 ? '🔴' : '🟢';
+    html += `<div class="log-block">
+      <h4>${icon} ${sName} (${step.scan_time_ms}ms)</h4>
+      <div class="log-item"><strong>发现问题：</strong>${issueCount} 项</div>`;
+
+    if (step.error) {
+      html += `<div class="log-item" style="color:var(--red)"><strong>错误：</strong>${escHtml(step.error)}</div>`;
+    }
+
+    if (issueCount > 0 && step.issues) {
+      for (const issue of step.issues) {
+        html += `<div style="margin:8px 0; padding:10px; background:var(--bg); border-radius:var(--radius-sm); font-size:12px;">
+          <div><strong>类型：</strong>${issue.sub_type} | <strong>位置：</strong>${issue.location}</div>
+          <div style="margin-top:4px; color:var(--text)"><strong>内容：</strong>${escHtml(issue.content)}</div>
+          <div style="margin-top:4px; color:var(--orange)"><strong>原因：</strong>${escHtml(issue.reason)}</div>
+          <div style="margin-top:4px; color:var(--accent)"><strong>建议：</strong>${escHtml(issue.suggestion)}</div>
+        </div>`;
+      }
+    }
+    html += '</div>';
+  }
+
+  modalBody.innerHTML = html;
+  modalBody.scrollTop = 0;
+}
+
+// ========== UTILS ==========
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return escHtml(s).replace(/'/g, '&#39;');
+}
+function truncate(s, max) {
+  if (!s) return '';
+  return s.length > max ? s.substring(0, max) + '…' : s;
+}
+</script>
+</body>
+</html>

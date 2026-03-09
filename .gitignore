@@ -1,0 +1,43 @@
+# Python 字节码
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境
+venv/
+env/
+.venv/
+.env/
+
+# IDE 配置
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 环境变量文件
+.env
+.env.local
+*.env
+
+# 日志文件
+*.log
+logs/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 分发/打包
+dist/
+build/
+*.egg-info/
+*.egg
+
+# 测试覆盖率
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
