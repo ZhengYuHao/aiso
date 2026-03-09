@@ -197,162 +197,20 @@ class FileParser:
 
     def extract_and_ocr(self, filepath: str) -> List[dict]:
         """
-        提取图片并使用 MinerU 进行 OCR 识别
+        提取图片并使用 OCR API 进行文字识别
         返回: List[dict] - 每项包含 {page, image_path, ocr_text, text_lines}
         """
+        from .ocr_client import OCRClient
+
         ext = os.path.splitext(filepath)[1].lower()
         results = []
+        ocr_client = OCRClient()
 
         if ext == ".pdf":
-            results = self._ocr_pdf_images(filepath)
+            results = ocr_client.recognize_pdf(filepath)
         elif ext == ".docx":
-            results = self._ocr_docx_images(filepath)
+            results = ocr_client.recognize_docx_images(filepath)
         elif ext == ".txt":
-            pass
-
-        return results
-
-    def _ocr_pdf_images(self, filepath: str) -> List[dict]:
-        """使用 MinerU 对 PDF 中的图片进行 OCR 识别"""
-        results = []
-
-        try:
-            from magic_pdf.data.data_reader_writer import FileBasedDataReader
-            from magic_pdf.data.dataset import PymuDocDataset
-            from magic_pdf.model import UNIPipe
-            import json
-            import tempfile
-            import shutil
-        except ImportError:
-            return self._ocr_pdf_fallback(filepath)
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-            image_dir = os.path.join(temp_dir, "images")
-            os.makedirs(image_dir, exist_ok=True)
-
-            reader = FileBasedDataReader("")
-
-            with open(filepath, "rb") as f:
-                pdf_bytes = f.read()
-
-            ds = PymuDocDataset(pdf_bytes, None)
-
-            if ds.classify() == "pdf":
-                pipe = UNIPipe(ds, {"_pdf_type": "", "model_list": "auto"})
-                pipe.pipe_classify()
-                pipe.pipe_parse()
-
-                content_list = pipe.get_content_list(FileBasedDataReader(""))
-
-                for item in content_list:
-                    page_num = item.get("page_idx", 0) + 1
-                    ocr_text = item.get("text", "")
-
-                    if ocr_text and ocr_text.strip():
-                        text_lines = [line.strip() for line in ocr_text.split("\n") if line.strip()]
-                        results.append({
-                            "page": page_num,
-                            "image_path": None,
-                            "ocr_text": ocr_text,
-                            "text_lines": text_lines,
-                            "source": "pdf_ocr"
-                        })
-
-            shutil.rmtree(temp_dir, ignore_errors=True)
-
-        except Exception as e:
-            return self._ocr_pdf_fallback(filepath)
-
-        return results
-
-    def _ocr_pdf_fallback(self, filepath: str) -> List[dict]:
-        """使用 pdf2image + PaddleOCR 的后备方案"""
-        results = []
-
-        try:
-            from pdf2image import convert_from_path
-            import paddle
-            from paddleocr import PaddleOCR
-        except ImportError:
-            return results
-
-        try:
-            paddle.enable_static()
-            ocr = PaddleOCR(use_angle_cls=True, lang="ch", show_log=False)
-
-            images = convert_from_path(filepath)
-
-            for page_num, image in enumerate(images, 1):
-                result = ocr.ocr(image, cls=True)
-
-                if result and result[0]:
-                    ocr_text_lines = []
-                    for line in result[0]:
-                        if line and len(line) >= 2:
-                            text = line[1][0]
-                            if text.strip():
-                                ocr_text_lines.append(text)
-
-                    if ocr_text_lines:
-                        results.append({
-                            "page": page_num,
-                            "image_path": None,
-                            "ocr_text": "\n".join(ocr_text_lines),
-                            "text_lines": ocr_text_lines,
-                            "source": "pdf_ocr_fallback"
-                        })
-
-        except Exception:
-            pass
-
-        return results
-
-    def _ocr_docx_images(self, filepath: str) -> List[dict]:
-        """对 DOCX 中的图片进行 OCR 识别"""
-        results = []
-
-        try:
-            from docx import Document
-            from docx.parts.inline_shapes import InlineShapes
-            import io
-            from PIL import Image
-            import paddle
-            from paddleocr import PaddleOCR
-        except ImportError:
-            return results
-
-        try:
-            paddle.enable_static()
-            ocr = PaddleOCR(use_angle_cls=True, lang="ch", show_log=False)
-
-            doc = Document(filepath)
-
-            for rel in doc.part.rels.values():
-                if "image" in rel.target_ref:
-                    image_part = rel.target_part
-                    image = Image.open(io.BytesIO(image_part.blob))
-
-                    result = ocr.ocr(image, cls=True)
-
-                    if result and result[0]:
-                        ocr_text_lines = []
-                        for line in result[0]:
-                            if line and len(line) >= 2:
-                                text = line[1][0]
-                                if text.strip():
-                                    ocr_text_lines.append(text)
-
-                        if ocr_text_lines:
-                            results.append({
-                                "page": 1,
-                                "image_path": None,
-                                "ocr_text": "\n".join(ocr_text_lines),
-                                "text_lines": ocr_text_lines,
-                                "source": "docx_image_ocr"
-                            })
-
-        except Exception:
             pass
 
         return results
