@@ -7,7 +7,8 @@
 - **涉密信息**（密级标识、军事/国安/外交/核心技术关键词）→ 强制拦截
 - **敏感信息**（身份证号、手机号、银行卡号、商业秘密等）→ 建议脱敏
 - **受限内容**（内部文件、版权保护、AI使用限制等）→ 风险提示
-- **其他风险**（API密钥、数据库连接、内网IP等）→ 提示注意
+- **凭证密钥**（API Key、Token、密码等）→ 提示注意
+- **内部架构**（内网IP、服务器路径、主机名等）→ 提示注意
 
 ## 快速启动
 
@@ -30,14 +31,65 @@ python app.py
 # http://localhost:5000
 ```
 
-## 双模式检测
+## 三层 Agent 架构
 
-系统支持两种检测模式：
+系统采用 **Master Agent → Category Agent → Skill** 三层架构：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Master Agent                           │
+│                    (总调度智能体)                            │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│   Classified  │ │   Sensitive   │ │   Restricted  │
+│     Agent     │ │     Agent     │ │     Agent     │
+│  (涉密信息)    │ │  (敏感信息)    │ │  (受限内容)    │
+└───────┬───────┘ └───────┬───────┘ └───────┬───────┘
+        │                 │                 │
+        ▼                 ▼                 ▼
+   ┌────┴────┐       ┌────┴────┐       ┌────┴────┐
+   │ Skills  │       │ Skills  │       │ Skills  │
+   └─────────┘       └─────────┘       └─────────┘
+```
+
+### Category Agents（5个分类智能体）
+
+| Agent | 检测类别 | Skills |
+|-------|---------|--------|
+| ClassifiedAgent | 涉密信息 | ClassifiedMarkSkill, ClassifiedKeywordSkill, StampOCRSkill |
+| SensitiveAgent | 敏感信息 | PIISkill, BusinessSensitiveSkill |
+| RestrictedAgent | 受限内容 | RestrictedContentSkill |
+| CredentialAgent | 凭证密钥 | CredentialSkill |
+| InfrastructureAgent | 内部架构 | InfrastructureSkill |
+
+### Skills（细粒度检测技能）
+
+每个 Skill 封装独立的检测逻辑：
+
+- **ClassifiedMarkSkill**: 密级标识检测（绝密/机密/秘密）
+- **ClassifiedKeywordSkill**: 涉密关键词检测
+- **StampOCRSkill**: 公章 OCR 识别
+- **PIISkill**: 个人隐私信息检测（身份证、银行卡、手机号等）
+- **BusinessSensitiveSkill**: 商业敏感信息检测
+- **RestrictedContentSkill**: 受限内容检测
+- **CredentialSkill**: 凭证密钥检测（API Key、Token等）
+- **InfrastructureSkill**: 内部架构信息检测
+
+## 双模式检测
 
 | 模式 | 说明 |
 |------|------|
-| 规则引擎 | 基于正则表达式和关键词库的本地检测，速度快 |
-| AI智能体 | 调用 LLM API 进行智能分析，支持 ChatGPT 4o、阿里云通义千问、百度文心一言 |
+| 规则引擎 | 执行所有 Skills，基于正则表达式和关键词库检测 |
+| AI智能体 | LLM 智能决策，先分析文本选择需要检测的类别和 Skills |
+
+### LLM 智能决策流程
+
+1. **Master Agent** 分析文本，决定需要检测的 Category
+2. **Category Agent** 进一步决定需要调用的 Skills
+3. **Skill** 执行细粒度检测，返回结果
 
 ### LLM API 配置
 
@@ -79,15 +131,23 @@ aiso/
 │   ├── file_parser.py                  # 多格式文件解析器
 │   ├── llm_client.py                   # LLM API 客户端
 │   ├── ocr_client.py                   # OCR API 客户端
-│   ├── classified_mark_detector.py     # 密级标识检测智能体
-│   ├── classified_keyword_detector.py  # 涉密关键词检测智能体
-│   ├── stamp_ocr_detector.py           # 公章OCR检测智能体
-│   ├── pii_detector.py                 # 个人隐私信息检测智能体
-│   ├── business_sensitive_detector.py  # 商业敏感信息检测智能体
-│   ├── restricted_content_detector.py  # 受限内容检测智能体
-│   ├── credential_detector.py          # 凭证密钥检测智能体
-│   ├── infrastructure_detector.py      # 内部架构信息检测智能体
-│   └── detection_orchestrator.py       # 检测调度器
+│   ├── detection_orchestrator.py       # 检测调度器
+│   ├── agents/                         # Agent 层
+│   │   ├── master_agent.py             # Master Agent（总调度）
+│   │   ├── base_agent.py              # Category Agent 基类
+│   │   └── category_agents/            # 5 个分类 Agent
+│   │       ├── classified_agent.py
+│   │       ├── sensitive_agent.py
+│   │       ├── restricted_agent.py
+│   │       ├── credential_agent.py
+│   │       └── infrastructure_agent.py
+│   └── skills/                         # Skill 层
+│       ├── base_skill.py              # Skill 基类
+│       ├── classified/                # 涉密检测 Skills
+│       ├── sensitive/                 # 敏感检测 Skills
+│       ├── restricted/                # 受限检测 Skills
+│       ├── credential/                # 凭证检测 Skills
+│       └── infrastructure/            # 架构检测 Skills
 ├── config/                             # 规则配置
 │   ├── classified_keywords.json        # 涉密关键词库
 │   └── ocr_config.json                 # OCR 配置
@@ -105,37 +165,27 @@ aiso/
 | .txt   | 纯文本文件           |
 | .pdf   | PDF 文档             |
 
-## 检测器列表（8个）
-
-| 层级 | 规则引擎 | AI智能体 |
-|------|---------|---------|
-| 第一层 | 涉密标识检测智能体处理 | 涉密标识检测智能体处理 |
-| 第一层 | 涉密关键词检测智能体处理 | 涉密信息检测智能体处理 |
-| 第二层 | 公章OCR检测智能体处理 | 公章OCR检测智能体处理 |
-| 第二层 | 个人隐私信息检测智能体处理 | 个人隐私信息检测智能体处理 |
-| 第二层 | 商业敏感信息检测智能体处理 | 商业敏感信息检测智能体处理 |
-| 第三层 | 受限内容检测智能体处理 | 受限内容检测智能体处理 |
-| 第四层 | 凭证密钥检测智能体处理 | 凭证密钥检测智能体处理 |
-| 第四层 | 内部架构信息检测智能体处理 | 内部架构信息检测智能体处理 |
-
 ## 判定结果
 
-| 层级   | 类别       | 判定       | 颜色   |
-|--------|-----------|-----------|--------|
-| 第一层 | 涉密信息   | BLOCK     | 🔴 红色 |
-| 第二层 | 敏感信息   | WARNING   | 🟠 橙色 |
-| 第三层 | 受限内容   | NOTICE    | 🟡 黄色 |
-| 第四层 | 风险内容   | NOTICE    | 🔵 蓝色 |
-| 通过   | 安全       | PASS      | 🟢 绿色 |
+| 类别       | 判定       | 颜色   |
+|-----------|-----------|--------|
+| 涉密信息   | BLOCK     | 🔴 红色 |
+| 敏感信息   | WARNING   | 🟠 橙色 |
+| 受限内容   | NOTICE    | 🟡 黄色 |
+| 凭证/架构  | NOTICE    | 🔵 蓝色 |
+| 通过       | PASS      | 🟢 绿色 |
 
 ## 功能特性
 
+- ✅ 三层 Agent 架构（Master → Category → Skill）
+- ✅ LLM 智能决策选择检测类别和 Skills
 - ✅ 多文件并发处理
 - ✅ 双模式检测（规则引擎 / AI智能体）
 - ✅ OCR 公章检测
 - ✅ 综合处理建议
 - ✅ 检测日志详情
 - ✅ 支持多种 LLM 提供商
+- ✅ 模块化设计，便于扩展新的检测技能
 
 ## 环境要求
 
