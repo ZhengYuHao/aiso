@@ -5,6 +5,7 @@ import os
 import json
 from typing import Optional, Dict, List, Any
 import requests
+from .logger import logger
 
 # 加载 .env 文件
 env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
@@ -199,12 +200,15 @@ class LLMClient:
         Returns:
             检测结果字典
         """
+        logger.info(f"LLM detect 调用, category: {category}, text长度: {len(text)}")
         if not text or not text.strip():
+            logger.warning("LLM detect: 文本为空")
             return {"is_sensitive": False, "category": "", "severity": "low", "reason": "", "suggestion": ""}
 
         prompt = DETECTION_PROMPTS.get(category, DETECTION_PROMPTS["classified"]) + text
 
         try:
+            logger.info(f"调用 LLM API, provider: {self.provider}, category: {category}")
             if self.provider == "openai":
                 result = self._call_openai(prompt)
             elif self.provider == "aliyun":
@@ -212,10 +216,15 @@ class LLMClient:
             elif self.provider == "baidu":
                 result = self._call_baidu(prompt)
             else:
+                logger.error(f"未知的 LLM provider: {self.provider}")
                 result = {"is_sensitive": False, "error": f"Unknown provider: {self.provider}"}
 
-            return self._parse_result(result)
+            logger.info(f"LLM 原始返回: {result[:500] if isinstance(result, str) else str(result)[:500]}")
+            parsed = self._parse_result(result)
+            logger.info(f"LLM 检测完成, category: {category}, is_sensitive: {parsed.get('is_sensitive')}, severity: {parsed.get('severity')}, reason: {parsed.get('reason', '')[:100]}")
+            return parsed
         except Exception as e:
+            logger.error(f"LLM 检测异常, category: {category}, error: {str(e)}")
             return {
                 "is_sensitive": False,
                 "error": str(e),

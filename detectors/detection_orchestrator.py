@@ -9,6 +9,7 @@ from .base_detector import (
     Paragraph, Issue, DetectionResult,
     Category, Severity, Verdict, VERDICT_PRIORITY
 )
+from .logger import logger
 from .file_parser import FileParser
 from .classified_mark_detector import ClassifiedMarkDetector
 from .classified_keyword_detector import ClassifiedKeywordDetector
@@ -57,6 +58,7 @@ class DetectionOrchestrator:
         执行完整的文件检测流程
         detection_mode: "rule" (规则引擎) 或 "llm" (AI智能体)
         """
+        logger.info(f"开始检测文件: {filepath}, 检测模式: {detection_mode}")
         total_start = time.time()
         report = {
             "detection_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -76,7 +78,9 @@ class DetectionOrchestrator:
         try:
             full_text, paragraphs, meta = self.parser.parse(filepath)
             report["file_info"] = meta
+            logger.debug(f"文件解析完成: {filepath}, 字符数: {len(full_text)}")
         except Exception as e:
+            logger.error(f"文件解析失败: {filepath}, 错误: {str(e)}")
             report["error"] = f"文件解析失败: {str(e)}"
             report["overall_verdict"] = "ERROR"
             report["risk_level"] = "无法判定"
@@ -108,17 +112,21 @@ class DetectionOrchestrator:
 
     def _detect_with_rules(self, filepath: str, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
         """使用规则引擎检测"""
+        logger.info("开始规则引擎检测...")
         all_issues: List[Issue] = []
 
         for detector in self.detectors:
             try:
+                logger.debug(f"运行检测器: {detector.name}")
                 if hasattr(detector, 'detect_from_file'):
                     result: DetectionResult = detector.detect_from_file(filepath)
                 else:
                     result: DetectionResult = detector.detect(full_text, paragraphs)
                 report["detection_steps"].append(result.to_dict())
                 all_issues.extend(result.issues)
+                logger.info(f"检测器 {detector.name} 完成，发现问题: {len(result.issues)}")
             except Exception as e:
+                logger.error(f"检测器 {detector.name} 执行失败: {str(e)}")
                 report["detection_steps"].append({
                     "detector_name": detector.name,
                     "error": str(e),
@@ -131,6 +139,7 @@ class DetectionOrchestrator:
 
     def _detect_with_llm(self, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
         """使用 LLM 进行检测"""
+        logger.info("开始 LLM 智能体检测...")
         all_issues: List[Issue] = []
 
         categories = [
@@ -146,11 +155,13 @@ class DetectionOrchestrator:
 
         for category_key, llm_key, detector_name in categories:
             try:
+                logger.debug(f"LLM 检测类别: {category_key}")
                 start_time = time.time()
 
                 text_to_check = full_text[:8000] if len(full_text) > 8000 else full_text
 
                 llm_result = self.llm_client.detect(text_to_check, category_key)
+                logger.debug(f"LLM 返回结果: {llm_result}")
 
                 issues = []
                 if llm_result.get("is_sensitive", False):

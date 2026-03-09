@@ -58,7 +58,11 @@ ALIYUN_MODEL=qwen-turbo
 
 # 百度配置（可选）
 BAIDU_API_KEY=your-baidu-api-key-here
-BAIDU_SECRET_KEY=your-baidu-secret-key-here
+
+# OCR 配置（可选）
+# 可用提供商: openai, aliyun, baidu (默认使用 openai，使用 LLM 的 API 密钥)
+OCR_PROVIDER=openai
+OPENAI_OCR_MODEL=gpt-4o
 ```
 
 ## 项目结构

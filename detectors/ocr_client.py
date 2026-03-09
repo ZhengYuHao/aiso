@@ -6,6 +6,15 @@ import json
 import os
 from typing import List, Dict, Optional
 import requests
+from .logger import logger
+
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(env_path):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_path)
+    except ImportError:
+        pass
 
 
 class OCRClient:
@@ -16,21 +25,40 @@ class OCRClient:
         self.provider = self.config.get("provider", "aliyun")
 
     def _load_config(self, config_path: str) -> Dict:
-        """加载 OCR 配置"""
-        if config_path is None:
-            config_path = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)),
-                "config", "ocr_config.json"
-            )
+        """加载 OCR 配置 - 从环境变量读取"""
+        self.provider = os.getenv("OCR_PROVIDER", "openai").lower()
 
-        if os.path.exists(config_path):
+        config = {
+            "provider": self.provider,
+            "openai": {
+                "api_key": os.getenv("OPENAI_API_KEY", ""),
+                "base_url": os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+                "model": os.getenv("OPENAI_OCR_MODEL", "gpt-4o"),
+            },
+            "aliyun": {
+                "access_key_id": os.getenv("ALIYUN_ACCESS_KEY_ID", ""),
+                "access_key_secret": os.getenv("ALIYUN_ACCESS_KEY_SECRET", ""),
+                "endpoint": os.getenv("ALIYUN_OCR_ENDPOINT", "ocr-api.cn-hangzhou.aliyuncs.com"),
+                "scene": os.getenv("ALIYUN_OCR_SCENE", "general"),
+            },
+            "baidu": {
+                "api_key": os.getenv("BAIDU_OCR_API_KEY", ""),
+                "secret_key": os.getenv("BAIDU_OCR_SECRET_KEY", ""),
+            }
+        }
+
+        if config_path and os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return {}
+                file_config = json.load(f)
+                config.update(file_config)
+
+        return config
 
     def recognize_image(self, image_data: bytes) -> List[str]:
         """识别图片中的文字"""
-        if self.provider == "aliyun":
+        if self.provider == "openai":
+            return self._recognize_openai(image_data)
+        elif self.provider == "aliyun":
             return self._recognize_aliyun(image_data)
         elif self.provider == "baidu":
             return self._recognize_baidu(image_data)
@@ -39,14 +67,17 @@ class OCRClient:
 
     def recognize_pdf(self, pdf_path: str) -> List[Dict]:
         """识别 PDF 中的文字（逐页转图片后识别）"""
+        logger.info(f"开始 OCR 识别 PDF: {pdf_path}, provider: {self.provider}")
         try:
             from pdf2image import convert_from_path
         except ImportError:
+            logger.warning("pdf2image 未安装，无法识别 PDF")
             return []
 
         results = []
         try:
             images = convert_from_path(pdf_path)
+            logger.debug(f"PDF 转换完成，共 {len(images)} 页")
             for page_num, image in enumerate(images, 1):
                 import io
                 img_byte_arr = io.BytesIO()
@@ -61,9 +92,11 @@ class OCRClient:
                         "text_lines": text_lines,
                         "source": f"pdf_{self.provider}_ocr"
                     })
-        except Exception:
-            pass
+                    logger.debug(f"第 {page_num} 页 OCR 识别完成，文字数: {len(text_lines)}")
+        except Exception as e:
+            logger.error(f"PDF OCR 识别异常: {str(e)}")
 
+        logger.info(f"PDF OCR 识别完成，识别页数: {len(results)}")
         return results
 
     def recognize_docx_images(self, docx_path: str) -> List[Dict]:
@@ -184,6 +217,69 @@ class OCRClient:
             pass
 
         return text_lines
+
+    def _recognize_openai(self, image_data: bytes) -> List[str]:
+        """OpenAI Vision API (GPT-4o) 识别图片文字"""
+        logger.info("调用 OpenAI Vision API 进行 OCR 识别")
+        config = self.config.get("openai", {})
+        api_key = config.get("api_key", "")
+        base_url = config.get("base_url", "https://api.openai.com/v1")
+        model = config.get("model", "gpt-4o")
+
+        if not api_key:
+            logger.warning("OpenAI API Key 未配置")
+            return []
+
+        try:
+            image_base64 = base64.b64encode(image_data).decode("utf-8")
+            logger.debug(f"图片已编码为 Base64，长度: {len(image_base64)}")
+
+            url = f"{base_url}/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "model": model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "请识别图片中的所有文字，按原格式返回。"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{image_base64[:50]}..." if len(image_base64) > 50 else f"data:image/png;base64,{image_base64}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "max_tokens": 4096
+            }
+
+            logger.info(f"发送 OCR 请求到 OpenAI API, model: {model}")
+            response = requests.post(url, headers=headers, json=payload, timeout=360)
+            logger.debug(f"OpenAI API 响应状态码: {response.status_code}")
+
+            if response.status_code == 200:
+                result = response.json()
+                logger.info(f"OpenAI API 返回结果: {json.dumps(result, ensure_ascii=False)[:500]}")
+                text = result["choices"][0]["message"]["content"]
+                lines = [line.strip() for line in text.split('\n') if line.strip()]
+                logger.info(f"OCR 识别完成，识别到 {len(lines)} 行文字")
+                return lines
+            else:
+                logger.error(f"OpenAI API 调用失败，状态码: {response.status_code}, 响应: {response.text[:500]}")
+
+        except Exception:
+            pass
+
+        return []
 
     def _recognize_baidu(self, image_data: bytes) -> List[str]:
         """百度OCR API"""
