@@ -456,6 +456,17 @@ body {
       <span class="format-tag">.pdf</span>
     </div>
     <input type="file" id="file-input" multiple accept=".docx,.txt,.pdf">
+    <div class="mode-switch" style="margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+      <span style="color: var(--text-secondary); font-size: 14px;">检测模式：</span>
+      <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="radio" name="detection_mode" value="rule" checked style="accent-color: var(--accent);">
+        <span style="color: var(--text-primary); font-size: 14px;">规则引擎</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="radio" name="detection_mode" value="llm" style="accent-color: var(--accent);">
+        <span style="color: var(--text-primary); font-size: 14px;">AI智能体</span>
+      </label>
+    </div>
   </div>
 
   <!-- Progress -->
@@ -541,7 +552,10 @@ async function handleFiles(files) {
     formData.append('files', file);
   }
 
-  // Show progress
+  const modeRadio = document.querySelector('input[name="detection_mode"]:checked');
+  const detectionMode = modeRadio ? modeRadio.value : 'rule';
+  formData.append('detection_mode', detectionMode);
+
   showProgress();
 
   try {
@@ -770,7 +784,7 @@ function renderIssuesTable(result, fileIdx) {
         border-radius:var(--radius-sm); padding:6px 16px; font-size:13px; cursor:pointer;
         transition:all 0.2s;
       " onmouseover="this.style.background='var(--border-light)'" onmouseout="this.style.background='var(--surface-3)'">
-        查看完整检测日志
+        查看智能体完整协作流程
       </button>
     </div>
   `;
@@ -806,6 +820,14 @@ function showLog(fileIdx) {
     <div class="log-item"><strong>风险等级：</strong>${result.risk_level}</div>
     <div class="log-item"><strong>问题总数：</strong>${result.issues_count}</div>
   </div>`;
+
+  // Comprehensive suggestion
+  if (result.comprehensive_suggestion) {
+    html += `<div class="log-block" style="background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%); border: 1px solid var(--accent);">
+      <h4>💡 综合处理建议</h4>
+      <div style="white-space: pre-line; line-height: 1.8; color: var(--text);">${escHtml(result.comprehensive_suggestion)}</div>
+    </div>`;
+  }
 
   // Detection steps
   const steps = result.detection_steps || [];
