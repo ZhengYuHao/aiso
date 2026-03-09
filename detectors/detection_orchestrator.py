@@ -20,6 +20,7 @@ from .credential_detector import CredentialDetector
 from .infrastructure_detector import InfrastructureDetector
 from .stamp_ocr_detector import StampOCRDetector
 from .llm_client import LLMClient
+from .agents.master_agent import MasterAgent
 
 
 LLM_DETECTOR_CATEGORIES = {
@@ -40,6 +41,7 @@ class DetectionOrchestrator:
     def __init__(self, config_dir: str = None):
         self.parser = FileParser()
         self.llm_client = LLMClient()
+        self.master_agent = MasterAgent(llm_client=self.llm_client)
 
         kw_config = f"{config_dir}/classified_keywords.json" if config_dir else None
         self.detectors = [
@@ -89,7 +91,7 @@ class DetectionOrchestrator:
         all_issues: List[Issue] = []
 
         if detection_mode == "llm":
-            all_issues = self._detect_with_llm(full_text, paragraphs, report)
+            all_issues = self._detect_with_agent(full_text, paragraphs, report)
         else:
             all_issues = self._detect_with_rules(filepath, full_text, paragraphs, report)
 
@@ -137,78 +139,56 @@ class DetectionOrchestrator:
 
         return all_issues
 
-    def _detect_with_llm(self, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
-        """使用 LLM 进行检测"""
-        logger.info("开始 LLM 智能体检测...")
-        all_issues: List[Issue] = []
+    def _detect_with_agent(self, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
+        """使用 Agent 架构进行检测"""
+        logger.info("开始 Agent 智能体检测...")
 
-        categories = [
-            ("classified", "classified", "涉密信息检测智能体处理"),
-            ("classified_mark", "classified_mark", "涉密标识检测智能体处理"),
-            ("stamp_ocr", "stamp_ocr", "公章OCR检测智能体处理"),
-            ("pii", "pii", "个人隐私信息检测智能体处理"),
-            ("business", "business", "商业敏感信息检测智能体处理"),
-            ("restricted_content", "restricted_content", "受限内容检测智能体处理"),
-            ("credential", "credential", "凭证密钥检测智能体处理"),
-            ("infrastructure", "infrastructure", "内部架构信息检测智能体处理"),
-        ]
+        text_to_check = full_text[:8000] if len(full_text) > 8000 else full_text
 
-        for category_key, llm_key, detector_name in categories:
-            try:
-                logger.debug(f"LLM 检测类别: {category_key}")
-                start_time = time.time()
+        skill_results = self.master_agent.detect(text_to_check)
 
-                text_to_check = full_text[:8000] if len(full_text) > 8000 else full_text
+        all_issues = []
+        for skill_result in skill_results:
+            category_map = {
+                "classified": Category.CLASSIFIED,
+                "sensitive": Category.SENSITIVE,
+                "restricted": Category.RESTRICTED,
+                "credential": Category.CREDENTIAL,
+                "infrastructure": Category.INFRASTRUCTURE,
+            }
 
-                llm_result = self.llm_client.detect(text_to_check, category_key)
-                logger.debug(f"LLM 返回结果: {llm_result}")
+            severity_map = {
+                "critical": Severity.CRITICAL,
+                "high": Severity.HIGH,
+                "medium": Severity.MEDIUM,
+                "low": Severity.LOW,
+            }
 
-                issues = []
-                if llm_result.get("is_sensitive", False):
-                    severity_map = {
-                        "critical": Severity.CRITICAL,
-                        "high": Severity.HIGH,
-                        "medium": Severity.MEDIUM,
-                        "low": Severity.LOW
-                    }
-                    severity = severity_map.get(llm_result.get("severity", "low"), Severity.MEDIUM)
+            issue = Issue(
+                category=category_map.get(skill_result.category.value, Category.SENSITIVE),
+                sub_type=skill_result.skill_name,
+                severity=severity_map.get(skill_result.severity.value, Severity.MEDIUM),
+                content=skill_result.reason[:200],
+                content_raw=text_to_check[:500],
+                location=skill_result.location or "全文",
+                paragraph_index=0,
+                char_offset=0,
+                char_length=len(text_to_check),
+                reason=skill_result.reason,
+                suggestion=skill_result.suggestion,
+                matched_rule=skill_result.matched_rule or f"agent_{skill_result.skill_name}",
+            )
+            all_issues.append(issue)
 
-                    issues.append(Issue(
-                        category=Category.CLASSIFIED if category_key == "classified" else Category.SENSITIVE,
-                        sub_type=f"llm_{category_key}",
-                        severity=severity,
-                        content=llm_result.get("reason", "")[:200],
-                        content_raw=text_to_check[:500],
-                        location="全文",
-                        paragraph_index=0,
-                        char_offset=0,
-                        char_length=len(text_to_check),
-                        reason=llm_result.get("reason", ""),
-                        suggestion=llm_result.get("suggestion", ""),
-                        matched_rule=f"LLM-{category_key}",
-                    ))
+            report["detection_steps"].append({
+                "detector_name": skill_result.skill_name,
+                "issues_count": 1,
+                "issues": [skill_result.to_dict()],
+                "scan_time_ms": 0,
+                "skill_result": skill_result.to_dict(),
+            })
 
-                elapsed = (time.time() - start_time) * 1000
-
-                report["detection_steps"].append({
-                    "detector_name": detector_name,
-                    "issues_count": len(issues),
-                    "issues": [i.to_dict() for i in issues],
-                    "scan_time_ms": elapsed,
-                    "llm_result": llm_result,
-                })
-
-                all_issues.extend(issues)
-
-            except Exception as e:
-                report["detection_steps"].append({
-                    "detector_name": detector_name,
-                    "error": str(e),
-                    "issues_count": 0,
-                    "issues": [],
-                    "scan_time_ms": 0,
-                })
-
+        logger.info(f"Agent 检测完成，发现问题: {len(all_issues)} 个")
         return all_issues
 
     def _deduplicate_issues(self, issues: List[Issue]) -> List[Issue]:
