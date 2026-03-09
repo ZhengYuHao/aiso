@@ -23,10 +23,13 @@ from .llm_client import LLMClient
 
 LLM_DETECTOR_CATEGORIES = {
     "classified": ["涉密信息", "密级标识"],
+    "classified_mark": ["密级标识", "绝密", "机密", "秘密", "内部", "公开"],
     "pii": ["个人隐私", "身份证", "手机号", "银行卡"],
     "business": ["商业敏感", "财务数据", "客户名单"],
     "credential": ["凭证密钥", "API Key", "密码"],
     "infrastructure": ["基础设施", "内网IP", "端口"],
+    "restricted_content": ["受限内容", "政治敏感", "暴力", "色情", "赌博", "毒品"],
+    "stamp_ocr": ["公章", "印章", "签字"],
 }
 
 
@@ -132,8 +135,11 @@ class DetectionOrchestrator:
 
         categories = [
             ("classified", "classified", "涉密信息检测智能体处理"),
+            ("classified_mark", "classified_mark", "涉密标识检测智能体处理"),
+            ("stamp_ocr", "stamp_ocr", "公章OCR检测智能体处理"),
             ("pii", "pii", "个人隐私信息检测智能体处理"),
             ("business", "business", "商业敏感信息检测智能体处理"),
+            ("restricted_content", "restricted_content", "受限内容检测智能体处理"),
             ("credential", "credential", "凭证密钥检测智能体处理"),
             ("infrastructure", "infrastructure", "内部架构信息检测智能体处理"),
         ]

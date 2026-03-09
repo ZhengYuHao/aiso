@@ -33,6 +33,40 @@ DETECTION_PROMPTS = {
 
 要检测的文本：""",
 
+    "classified_mark": """你是一个密级标识检测专家。请分析以下文本内容，检测是否包含密级标识：
+- 绝密、机密、秘密
+- 内部、公开
+- 密级标注文件标题
+- 编号中的密级标识
+
+请返回JSON格式的检测结果：
+{{
+    "is_sensitive": true/false,
+    "category": "密级标识类型",
+    "severity": "critical/high/medium/low",
+    "reason": "检测理由",
+    "suggestion": "处理建议"
+}}
+
+要检测的文本：""",
+
+    "stamp_ocr": """你是一个公章OCR检测专家。请分析以下文本内容，检测是否包含公章或印章相关信息：
+- 公章文字
+- 印章图案描述
+- 签字信息
+- 落款日期和单位
+
+请返回JSON格式的检测结果：
+{{
+    "is_sensitive": true/false,
+    "category": "公章类型",
+    "severity": "critical/high/medium/low",
+    "reason": "检测理由",
+    "suggestion": "处理建议"
+}}
+
+要检测的文本：""",
+
     "pii": """你是一个隐私保护检测专家。请分析以下文本内容，检测是否包含个人隐私信息：
 - 身份证号
 - 手机号
@@ -63,6 +97,25 @@ DETECTION_PROMPTS = {
 {{
     "is_sensitive": true/false,
     "category": "商业敏感类型",
+    "severity": "critical/high/medium/low",
+    "reason": "检测理由",
+    "suggestion": "处理建议"
+}}
+
+要检测的文本：""",
+
+    "restricted_content": """你是一个受限内容检测专家。请分析以下文本内容，检测是否包含受限内容：
+- 政治敏感内容
+- 暴力血腥内容
+- 色情低俗内容
+- 赌博相关内容
+- 毒品相关推广
+- 邪教组织宣传
+
+请返回JSON格式的检测结果：
+{{
+    "is_sensitive": true/false,
+    "category": "受限内容类型",
     "severity": "critical/high/medium/low",
     "reason": "检测理由",
     "suggestion": "处理建议"
