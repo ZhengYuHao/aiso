@@ -139,16 +139,26 @@ class DetectionOrchestrator:
 
         return all_issues
 
-    def _detect_with_agent(self, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
+    def _detect_with_agent(self, full_text: str, paragraphs: List[Paragraph], report: Dict, use_llm_decision: bool = False) -> List[Issue]:
         """使用 Agent 架构进行检测"""
-        logger.info("开始 Agent 智能体检测...")
+        logger.info(f"========== 开始 Agent 智能体检测 ==========")
+        logger.info(f"文本长度: {len(full_text)}, LLM决策: {use_llm_decision}")
 
         text_to_check = full_text[:8000] if len(full_text) > 8000 else full_text
 
-        skill_results = self.master_agent.detect(text_to_check)
+        skill_results = self.master_agent.detect(text_to_check, use_llm_decision=True)
 
+        logger.info(f">>> Agent 返回 {len(skill_results)} 个 SkillResult")
+        
         all_issues = []
         for skill_result in skill_results:
+            logger.info(f"--- 转换 SkillResult -> Issue ---")
+            logger.info(f"skill_name: {skill_result.skill_name}")
+            logger.info(f"category: {skill_result.category.value}")
+            logger.info(f"severity: {skill_result.severity.value}")
+            logger.info(f"is_triggered: {skill_result.is_triggered}")
+            logger.info(f"reason: {skill_result.reason[:100]}...")
+            
             category_map = {
                 "classified": Category.CLASSIFIED,
                 "sensitive": Category.SENSITIVE,
@@ -188,7 +198,9 @@ class DetectionOrchestrator:
                 "skill_result": skill_result.to_dict(),
             })
 
-        logger.info(f"Agent 检测完成，发现问题: {len(all_issues)} 个")
+            logger.info(f">>> Issue 创建成功: category={issue.category.value}, severity={issue.severity.value}")
+
+        logger.info(f"========== Agent 检测完成，发现问题: {len(all_issues)} 个 ==========")
         return all_issues
 
     def _deduplicate_issues(self, issues: List[Issue]) -> List[Issue]:

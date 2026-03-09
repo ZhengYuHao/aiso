@@ -12,6 +12,8 @@ class Category(str, Enum):
     CLASSIFIED = "classified"       # 涉密信息
     SENSITIVE = "sensitive"         # 敏感信息
     RESTRICTED = "restricted"       # 受限使用内容
+    CREDENTIAL = "credential"       # 凭证密钥
+    INFRASTRUCTURE = "infrastructure"  # 内部架构
     RISKY = "risky"                # 其他风险内容
 
 

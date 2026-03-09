@@ -14,7 +14,7 @@ class Severity(Enum):
     LOW = "low"
 
 
-class Category(Enum):
+class Category(str, Enum):
     CLASSIFIED = "classified"       # 涉密信息
     SENSITIVE = "sensitive"         # 敏感信息
     RESTRICTED = "restricted"       # 受限内容
