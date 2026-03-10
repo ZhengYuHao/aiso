@@ -1,0 +1,82 @@
+{
+  "skill_id": "learned_20260310151910_801d9e",
+  "skill_name": "classified_检测到密级标识",
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "false_positive_rate": 0.0,
+    "true_positive_rate": 1.0,
+    "true_positives": [
+      {
+        "text": "涉及网络安全等级保护的业务...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:网络安全等级保护"
+      },
+      {
+        "text": "需要处理网络安全等级保护相关数据...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:网络安全等级保护"
+      },
+      {
+        "text": "需要处理机密相关数据...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:机密"
+      },
+      {
+        "text": "文件中含有数据分类分级信息...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:数据分类分级"
+      },
+      {
+        "text": "这是一段包含自查自纠的测试文本...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:自查自纠"
+      },
+      {
+        "text": "这是一段包含数据分类分级的测试文本...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:数据分类分级"
+      },
+      {
+        "text": "关于国家数据安全局的说明...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:国家数据安全局"
+      },
+      {
+        "text": "关于风险隐患的说明...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:风险隐患"
+      },
+      {
+        "text": "文件中含有国家数据安全局信息...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:国家数据安全局"
+      }
+    ],
+    "false_positives": [],
+    "false_negatives": []
+  },
+  "status": "active",
+  "recommendation": "规则效果良好（F1=1.00），已自动激活使用",
+  "evaluated_at": "2026-03-10T15:19:10.413078",
+  "test_case_count": 10
+}

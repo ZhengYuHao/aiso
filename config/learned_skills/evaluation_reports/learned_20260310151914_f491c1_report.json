@@ -1,0 +1,83 @@
+{
+  "skill_id": "learned_20260310151914_f491c1",
+  "skill_name": "restricted_检测到受限内容",
+  "metrics": {
+    "precision": 0.8888888888888888,
+    "recall": 1.0,
+    "f1_score": 0.9411764705882353,
+    "false_positive_rate": 0.5,
+    "true_positive_rate": 1.0,
+    "true_positives": [
+      {
+        "text": "关于网络安全等级保护的说明...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:网络安全等级保护"
+      },
+      {
+        "text": "需要处理专项检查相关数据...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:专项检查"
+      },
+      {
+        "text": "涉及专项检查的业务...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:专项检查"
+      },
+      {
+        "text": "涉及网络安全等级保护的业务...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:网络安全等级保护"
+      },
+      {
+        "text": "关于数据安全的说明...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:数据安全"
+      },
+      {
+        "text": "文件中含有专项检查信息...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:专项检查"
+      },
+      {
+        "text": "涉及机密的业务...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:机密"
+      },
+      {
+        "text": "需要处理自查自纠相关数据...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:自查自纠"
+      }
+    ],
+    "false_positives": [
+      {
+        "text": "不包含数据安全的内容...",
+        "expected": false,
+        "detected": true,
+        "correct": false,
+        "description": "负例-变体:数据安全"
+      }
+    ],
+    "false_negatives": []
+  },
+  "status": "active",
+  "recommendation": "规则效果良好（F1=0.94），已自动激活使用",
+  "evaluated_at": "2026-03-10T15:19:14.207715",
+  "test_case_count": 10
+}

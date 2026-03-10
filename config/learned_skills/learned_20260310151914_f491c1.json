@@ -1,0 +1,65 @@
+{
+  "skill_id": "learned_20260310151914_f491c1",
+  "name": "restricted_检测到受限内容",
+  "description": "检测到受限内容: 机密",
+  "category": "restricted",
+  "rule_type": "pattern",
+  "rules": [
+    {
+      "type": "keyword",
+      "value": "机密",
+      "description": "标识文档的保密等级"
+    },
+    {
+      "type": "keyword",
+      "value": "数据安全",
+      "description": "涉及数据安全相关内容"
+    },
+    {
+      "type": "keyword",
+      "value": "专项检查",
+      "description": "指代特定的检查活动"
+    },
+    {
+      "type": "keyword",
+      "value": "国家数据安全局",
+      "description": "涉及国家数据安全管理机构"
+    },
+    {
+      "type": "keyword",
+      "value": "数据安全法",
+      "description": "提及相关法律法规"
+    },
+    {
+      "type": "keyword",
+      "value": "风险隐患",
+      "description": "涉及风险管理和隐患排查"
+    },
+    {
+      "type": "keyword",
+      "value": "自查自纠",
+      "description": "指代自我检查和纠正"
+    },
+    {
+      "type": "keyword",
+      "value": "网络安全等级保护",
+      "description": "涉及网络安全等级保护制度"
+    },
+    {
+      "type": "regex",
+      "value": "国数检〔\\d{4}〕\\d+号",
+      "description": "匹配文件编号格式"
+    },
+    {
+      "type": "regex",
+      "value": "\\d{4}年\\d{1,2}月\\d{1,2}日",
+      "description": "匹配日期格式"
+    }
+  ],
+  "severity": "medium",
+  "suggestion": "该文件包含受限内容，请确认是否允许发送至外部 AI 平台",
+  "created_at": "2026-03-10T15:19:14.156264",
+  "usage_count": 0,
+  "accuracy": 0.9411764705882353,
+  "status": "active"
+}

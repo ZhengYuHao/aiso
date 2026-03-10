@@ -1,5 +1,24 @@
 {
-    "version": "1.0",
-    "last_updated": "",
-    "skills": []
+  "version": "1.0",
+  "last_updated": "2026-03-10T15:19:14.203456",
+  "skills": [
+    {
+      "skill_id": "learned_20260310151910_801d9e",
+      "name": "classified_检测到密级标识",
+      "category": "classified",
+      "status": "active",
+      "accuracy": 1.0,
+      "usage_count": 0,
+      "created_at": "2026-03-10T15:19:10.392270"
+    },
+    {
+      "skill_id": "learned_20260310151914_f491c1",
+      "name": "restricted_检测到受限内容",
+      "category": "restricted",
+      "status": "active",
+      "accuracy": 0.9411764705882353,
+      "usage_count": 0,
+      "created_at": "2026-03-10T15:19:14.156264"
+    }
+  ]
 }

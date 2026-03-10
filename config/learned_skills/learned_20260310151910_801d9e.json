@@ -1,0 +1,65 @@
+{
+  "skill_id": "learned_20260310151910_801d9e",
+  "name": "classified_检测到密级标识",
+  "description": "检测到密级标识: 机密",
+  "category": "classified",
+  "rule_type": "pattern",
+  "rules": [
+    {
+      "type": "keyword",
+      "value": "机密",
+      "description": "文本中明确标识为机密"
+    },
+    {
+      "type": "keyword",
+      "value": "数据安全",
+      "description": "涉及数据安全的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "专项检查",
+      "description": "提到专项检查的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "国家数据安全局",
+      "description": "涉及国家数据安全局的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "自查自纠",
+      "description": "提到自查自纠的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "风险隐患",
+      "description": "涉及风险隐患的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "数据分类分级",
+      "description": "提到数据分类分级的内容"
+    },
+    {
+      "type": "keyword",
+      "value": "网络安全等级保护",
+      "description": "涉及网络安全等级保护的内容"
+    },
+    {
+      "type": "regex",
+      "value": "国数检〔\\d{4}〕\\d+号",
+      "description": "匹配文件编号格式"
+    },
+    {
+      "type": "regex",
+      "value": "\\d{4}年\\d{1,2}月\\d{1,2}日",
+      "description": "匹配日期格式"
+    }
+  ],
+  "severity": "critical",
+  "suggestion": "该文件包含涉密标识，严禁发送至外部 AI 平台",
+  "created_at": "2026-03-10T15:19:10.392270",
+  "usage_count": 0,
+  "accuracy": 1.0,
+  "status": "active"
+}
