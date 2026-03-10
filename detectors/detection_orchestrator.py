@@ -21,6 +21,7 @@ from .infrastructure_detector import InfrastructureDetector
 from .stamp_ocr_detector import StampOCRDetector
 from .llm_client import LLMClient
 from .agents.master_agent import MasterAgent
+from .agents.learning import LearningAgent, EvaluationAgent
 
 
 LLM_DETECTOR_CATEGORIES = {
@@ -42,6 +43,9 @@ class DetectionOrchestrator:
         self.parser = FileParser()
         self.llm_client = LLMClient()
         self.master_agent = MasterAgent(llm_client=self.llm_client)
+        
+        self.learning_agent = LearningAgent(llm_client=self.llm_client)
+        self.evaluation_agent = EvaluationAgent()
 
         kw_config = f"{config_dir}/classified_keywords.json" if config_dir else None
         self.detectors = [
@@ -201,7 +205,43 @@ class DetectionOrchestrator:
             logger.info(f">>> Issue 创建成功: category={issue.category.value}, severity={issue.severity.value}")
 
         logger.info(f"========== Agent 检测完成，发现问题: {len(all_issues)} 个 ==========")
+        
+        self._trigger_learning(text_to_check, skill_results)
+        
         return all_issues
+
+    def _trigger_learning(self, text: str, skill_results: List[Any]):
+        """触发边学边用功能"""
+        try:
+            if not skill_results:
+                return
+            
+            triggered_skills = [r for r in skill_results if r.is_triggered]
+            if not triggered_skills:
+                return
+            
+            logger.info(f"========== 开始边学边用 ==========")
+            
+            for skill_result in triggered_skills:
+                llm_result = {
+                    "is_sensitive": True,
+                    "category": skill_result.category.value,
+                    "severity": skill_result.severity.value,
+                    "reason": skill_result.reason,
+                    "suggestion": skill_result.suggestion
+                }
+                
+                learned = self.learning_agent.analyze_and_learn(text, llm_result)
+                if learned:
+                    logger.info(f"边学边用: 成功学习新规则 [{learned.name}], 等待评估...")
+                    
+                    report = self.evaluation_agent.evaluate(learned.skill_id)
+                    if report:
+                        logger.info(f"边学边用: 评估完成 [{learned.name}], F1={report.metrics.f1_score:.2f}, 状态={report.status.value}")
+            
+            logger.info(f"========== 边学边用完成 ==========")
+        except Exception as e:
+            logger.error(f"边学边用执行失败: {str(e)}")
 
     def _deduplicate_issues(self, issues: List[Issue]) -> List[Issue]:
         """去重"""

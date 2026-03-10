@@ -135,6 +135,10 @@ aiso/
 │   ├── agents/                         # Agent 层
 │   │   ├── master_agent.py             # Master Agent（总调度）
 │   │   ├── base_agent.py              # Category Agent 基类
+│   │   ├── learning/                  # 边学边用模块（新增）
+│   │   │   ├── learning_agent.py     # 边学边用智能体
+│   │   │   ├── evaluation_agent.py   # 测试评估智能体
+│   │   │   └── learned_skill.py       # 学习到的规则数据模型
 │   │   └── category_agents/            # 5 个分类 Agent
 │   │       ├── classified_agent.py
 │   │       ├── sensitive_agent.py
@@ -150,12 +154,57 @@ aiso/
 │       └── infrastructure/            # 架构检测 Skills
 ├── config/                             # 规则配置
 │   ├── classified_keywords.json        # 涉密关键词库
+│   ├── learning_config.json           # 边学边用配置
+│   ├── learned_skills/               # 学习到的规则存储
+│   │   ├── metadata.json             # 规则索引
+│   │   └── evaluation_reports/       # 评估报告
 │   └── ocr_config.json                 # OCR 配置
 ├── templates/
 │   └── index.html                      # 前端页面
 ├── uploads/                            # 临时上传目录
 └── logs/                               # 检测日志目录
 ```
+
+## 边学边用系统
+
+系统支持**边学边用**功能，能够从 LLM 检测结果中自动学习新的检测规则。
+
+### 工作原理
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  LLM 检测   │ →  │ Learning   │ →  │ Evaluation │ →  │ 规则存储   │
+│  发现问题   │    │   Agent    │    │   Agent    │    │ 复用      │
+│             │    │  学习规则   │    │  测试评估   │    │           │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+### 规则状态
+
+| 状态 | 说明 | 阈值 |
+|------|------|------|
+| testing | 待测试 | F1 < 0.8 |
+| active | 已激活 | F1 >= 0.8 |
+| discarded | 已丢弃 | F1 < 0.3 |
+
+### 配置选项
+
+编辑 `config/learning_config.json`:
+
+```json
+{
+    "learning_enabled": true,
+    "auto_activate_threshold": 0.8,
+    "min_samples_for_learning": 1,
+    "max_learned_skills": 100,
+    "evaluation_interval_hours": 24,
+    "min_test_cases": 10
+}
+```
+
+### 查看学习结果
+
+学习到的规则保存在 `config/learned_skills/` 目录，评估报告保存在 `evaluation_reports/` 子目录。
 
 ## 支持的文件格式
 
@@ -179,6 +228,8 @@ aiso/
 
 - ✅ 三层 Agent 架构（Master → Category → Skill）
 - ✅ LLM 智能决策选择检测类别和 Skills
+- ✅ 边学边用（从 LLM 检测结果自动学习新规则）
+- ✅ 规则自动评估（F1 分数阈值激活/丢弃）
 - ✅ 多文件并发处理
 - ✅ 双模式检测（规则引擎 / AI智能体）
 - ✅ OCR 公章检测

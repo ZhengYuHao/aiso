@@ -1,0 +1,9 @@
+{
+    "learning_enabled": true,
+    "auto_activate_threshold": 0.8,
+    "min_samples_for_learning": 1,
+    "max_learned_skills": 100,
+    "evaluation_interval_hours": 24,
+    "learned_skills_dir": "config/learned_skills",
+    "min_test_cases": 10
+}
