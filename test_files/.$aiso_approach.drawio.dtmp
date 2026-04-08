@@ -1,0 +1,273 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.8 Chrome/140.0.7339.240 Electron/38.4.0 Safari/537.36" version="28.2.8">
+  <diagram name="AISO System Approach" id="aiso-approach">
+    <mxGraphModel dx="2352" dy="1098" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="AISO: AI-Powered Intelligent Security Detection System&#xa;基于大模型的智能安全信息检测系统" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="300" y="20" width="1400" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="1290" y="60" width="380" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="图例 Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1410" y="70" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-input" value="输入/输出" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1310" y="110" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-agent" value="Agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1310" y="160" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-skill" value="Skill" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1310" y="210" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-llm" value="LLM模块" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8BBD9;strokeColor=#C2185B;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1540" y="110" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-learning" value="学习模块" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1540" y="160" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-decision" value="决策判断" style="rhombus;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#7B1FA2;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1540" y="220" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="input-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=2;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
+          <mxGeometry x="50" y="100" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="input-label" value="输入层 (Input Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="60" y="110" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="input-doc" value="待检测文档&#xa;&#xa;合同、邮件、代码&#xa;PDF、DOCX、图片" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFFFFF;strokeColor=#1976D2;fontSize=12;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="80" y="160" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="input-text" value="文本提取 + OCR识别" style="text;html=1;strokeColor=#1976D2;fillColor=none;align=center;fontSize=10;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="100" y="250" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="master-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;strokeWidth=2;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
+          <mxGeometry x="50" y="340" width="1700" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="master-label" value="阶段 1: Master Agent - 智能调度层 (Intelligent Orchestration)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="60" y="350" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="text-input" value="提取文本" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=11;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="80" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-llm" value="使用LLM?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#7B1FA2;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="240" y="385" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="llm-decision" value="LLM智能决策&#xa;&#xa;分析文本语义&#xa;选择检测Category&#xa;筛选Skills" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8BBD9;strokeColor=#C2185B;fontSize=11;fontFamily=Arial;align=left;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="400" y="380" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rule-mode" value="规则引擎模式&#xa;&#xa;全量执行所有&#xa;Category Agents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;fontSize=11;fontFamily=Arial;align=left;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="400" y="380" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="category-select" value="选择Category:&#xa;&#xa;[Classified, Sensitive,&#xa;Restricted, ...]" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=11;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="600" y="390" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dispatch" value="任务分发&#xa;Dispatcher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="820" y="400" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="learned-skills" value="边学边用规则&#xa;&#xa;已激活规则: N个&#xa;F1 &gt;= 0.8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;fontSize=10;fontFamily=Arial;align=left;spacingLeft=5;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="1280" y="380" width="120" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="master-output" value="调度结果&#xa;&#xa;激活的Agent列表&#xa;待执行的Skills" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=11;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="1440" y="390" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="category-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;strokeWidth=2;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
+          <mxGeometry x="50" y="540" width="1700" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="category-label" value="阶段 2: Category Agents - 分类检测层 (Category Detection)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="60" y="550" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ca-classified" value="Classified Agent&#xa;涉密信息检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#2E7D32;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="80" y="600" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ca-sensitive" value="Sensitive Agent&#xa;敏感信息检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#2E7D32;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="230" y="600" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ca-restricted" value="Restricted Agent&#xa;受限内容检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#2E7D32;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="380" y="600" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ca-credential" value="Credential Agent&#xa;凭证密钥检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#2E7D32;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="530" y="600" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ca-infra" value="Infrastructure Agent&#xa;内部架构检测" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#81C784;strokeColor=#2E7D32;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="680" y="600" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="skills-label" value="Skills (检测规则)" style="text;html=1;strokeColor=#E65100;fillColor=none;align=left;fontSize=12;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="80" y="680" width="150" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-1" value="ClassifiedMark&#xa;密级标识" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="80" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-2" value="ClassifiedKeyword&#xa;涉密关键词" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="170" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-3" value="StampOCR&#xa;公章识别" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="260" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-4" value="PII&#xa;个人隐私" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="350" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-5" value="BusinessSensitive&#xa;商业敏感" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="440" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-6" value="RestrictedContent&#xa;受限内容" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="530" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-7" value="Credential&#xa;凭证密钥" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="620" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-8" value="Infrastructure&#xa;内部架构" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCC80;strokeColor=#E65100;fontSize=9;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="710" y="710" width="85" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="result-aggregate" value="结果聚合&#xa;&#xa;合并所有Skill&#xa;检测结果" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#388E3C;fontSize=11;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="850" y="620" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="learning-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;strokeWidth=2;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="560" width="690" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="learning-label" value="阶段 3: 边学边用 - 持续学习层 (Continuous Learning)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1010" y="570" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="llm-result" value="LLM检测结果&#xa;&#xa;发现新问题模式" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=10;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="1020" y="620" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="learning-agent" value="Learning Agent&#xa;&#xa;提取检测规则&#xa;生成正则/关键词" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;fontSize=10;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="1180" y="610" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="eval-agent" value="Evaluation Agent&#xa;&#xa;测试新规则&#xa;计算F1分数" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;fontSize=10;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="1330" y="610" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="decision-f1" value="F1 &gt;= 0.8?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#7B1FA2;fontSize=10;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1480" y="610" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="skill-manager" value="SkillManager&#xa;&#xa;激活规则&#xa;持久化存储" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F57F17;fontSize=10;fontFamily=Arial;align=center" parent="1" vertex="1">
+          <mxGeometry x="1610" y="610" width="100" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="learning-note" value="规则状态流转:&#xa;TESTING (待测试): F1 &lt; 0.8&#xa;ACTIVE (已激活): F1 &gt;= 0.8&#xa;DISCARDED (丢弃): F1 &lt; 0.3" style="text;html=1;strokeColor=#F57F17;fillColor=#FFF9C4;align=left;fontSize=9;fontFamily=Arial;rounded=1;spacingLeft=5;spacingTop=3" parent="1" vertex="1">
+          <mxGeometry x="1180" y="700" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="output-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#7B1FA2;strokeWidth=2;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
+          <mxGeometry x="50" y="840" width="1700" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="output-label" value="输出层 (Output Layer)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="60" y="850" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-results" value="检测结果列表&#xa;&#xa;List[SkillResult]&#xa;is_triggered: bool&#xa;severity: CRITICAL/HIGH...&#xa;category: CLASSIFIED/..." style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=10;fontFamily=Arial;align=left;spacingLeft=10" parent="1" vertex="1">
+          <mxGeometry x="80" y="900" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="output-classify" value="风险分级&#xa;&#xa;BLOCK (强制拦截)&#xa;WARNING (建议脱敏)&#xa;NOTICE (风险提示)&#xa;PASS (安全通过)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#7B1FA2;fontSize=10;fontFamily=Arial;align=left;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="350" y="890" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="output-report" value="检测报告&#xa;&#xa;问题列表&#xa;风险等级评估&#xa;修复建议&#xa;证据截图" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#C8E6C9;strokeColor=#4CAF50;fontSize=11;fontFamily=Arial;align=center;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="560" y="900" width="180" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="output-suggestion" value="处理建议&#xa;&#xa;拦截提交&#xa;脱敏处理&#xa;用户确认&#xa;直接放行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=10;fontFamily=Arial;align=left;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="790" y="890" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="advantages-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#666666;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="860" width="690" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="advantages-title" value="系统核心优势" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;fontFamily=Arial" parent="1" vertex="1">
+          <mxGeometry x="1230" y="870" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="adv-1" value="三层Agent架构&#xa;&#xa;Master-Category-Skill&#xa;职责清晰，易扩展" style="text;html=1;strokeColor=#388E3C;fillColor=#E8F5E9;align=left;fontSize=10;fontFamily=Arial;rounded=1;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="1020" y="910" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="adv-2" value="双模式检测&#xa;&#xa;规则引擎 + LLM智能&#xa;准确率95%+" style="text;html=1;strokeColor=#1976D2;fillColor=#BBDEFB;align=left;fontSize=10;fontFamily=Arial;rounded=1;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="1190" y="910" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="adv-3" value="边学边用&#xa;&#xa;自动学习新规则&#xa;持续提升检测能力" style="text;html=1;strokeColor=#F57F17;fillColor=#FFF8E1;align=left;fontSize=10;fontFamily=Arial;rounded=1;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="1360" y="910" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="adv-4" value="多格式支持&#xa;&#xa;PDF/DOCX/图片&#xa;OCR识别公章" style="text;html=1;strokeColor=#7B1FA2;fillColor=#E1BEE7;align=left;fontSize=10;fontFamily=Arial;rounded=1;spacingLeft=8;spacingTop=5" parent="1" vertex="1">
+          <mxGeometry x="1530" y="910" width="140" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1976D2;endArrow=block;endFill=1;" parent="1" source="input-doc" target="text-input" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1976D2;endArrow=block;endFill=1;" parent="1" source="text-input" target="decision-llm" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-3" value="是" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#C2185B;endArrow=block;endFill=1;fontSize=10;fontColor=#C2185B" parent="1" source="decision-llm" target="llm-decision" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-4" value="否" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388E3C;endArrow=block;endFill=1;fontSize=10;fontColor=#388E3C" parent="1" source="decision-llm" target="rule-mode" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="480" />
+              <mxPoint x="400" y="480" />
+              <mxPoint x="400" y="425" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#C2185B;endArrow=block;endFill=1;" parent="1" source="llm-decision" target="category-select" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#FF9800;endArrow=block;endFill=1;" parent="1" source="category-select" target="dispatch" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388E3C;endArrow=block;endFill=1;" parent="1" source="dispatch" target="ca-classified" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="480" />
+              <mxPoint x="145" y="480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" parent="1" source="ca-classified" target="skill-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388E3C;endArrow=block;endFill=1;" parent="1" source="ca-sensitive" target="result-aggregate" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#388E3C;endArrow=block;endFill=1;" parent="1" source="result-aggregate" target="output-results" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="910" y="880" />
+              <mxPoint x="190" y="880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7B1FA2;endArrow=block;endFill=1;" parent="1" source="output-results" target="output-classify" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7B1FA2;endArrow=block;endFill=1;" parent="1" source="output-classify" target="output-report" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1976D2;endArrow=block;endFill=1;" parent="1" source="output-report" target="output-suggestion" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F57F17;endArrow=block;endFill=1;dashed=1;" parent="1" source="llm-result" target="learning-agent" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F57F17;endArrow=block;endFill=1;" parent="1" source="learning-agent" target="eval-agent" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F57F17;endArrow=block;endFill=1;" parent="1" source="eval-agent" target="decision-f1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-17" value="是" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4CAF50;endArrow=block;endFill=1;fontSize=10;fontColor=#4CAF50" parent="1" source="decision-f1" target="skill-manager" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F57F17;endArrow=block;endFill=1;dashed=1;" parent="1" source="skill-manager" target="learned-skills" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1660" y="560" />
+              <mxPoint x="1340" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F57F17;endArrow=block;endFill=1;dashed=1;" parent="1" source="learned-skills" target="dispatch" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1340" y="470" />
+              <mxPoint x="880" y="470" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

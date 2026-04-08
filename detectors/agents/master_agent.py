@@ -1,6 +1,7 @@
 """
 Master Agent - 总调度 Agent
 支持 LLM 智能决策选择合适的 Skills
+支持边学边用：自动加载学习到的规则
 """
 import json
 from typing import List, Dict, Any
@@ -12,6 +13,7 @@ from .category_agents import (
     CredentialAgent,
     InfrastructureAgent,
 )
+from .learning import LearnedSkillManager, SkillStatus
 from ..skills.base_skill import SkillResult, Category
 
 
@@ -49,6 +51,19 @@ class MasterAgent:
             CredentialAgent(llm_client),
             InfrastructureAgent(llm_client),
         ]
+        
+        self.learned_skill_manager = LearnedSkillManager()
+        self.learned_skills = self._load_learned_skills()
+        
+    def _load_learned_skills(self) -> List[Any]:
+        """加载已激活的学习到的规则"""
+        from ..logger import logger
+        skills = self.learned_skill_manager.load_all_skills(SkillStatus.ACTIVE)
+        if skills:
+            logger.info(f"边学边用: 加载 {len(skills)} 个已激活的规则")
+            for skill in skills:
+                logger.info(f"  - {skill.name} (category={skill.category}, rules={len(skill.rules)})")
+        return skills
 
     def get_category_summaries(self) -> str:
         """获取所有 Category Agent 描述"""
@@ -92,8 +107,49 @@ class MasterAgent:
                 except Exception as e:
                     logger.error(f"Category Agent {agent.name} 执行失败: {str(e)}")
 
+        all_results.extend(self._detect_with_learned_skills(text, **kwargs))
+
         logger.info(f"========== Master Agent 检测完成，总发现问题: {len(all_results)} 个 ==========")
         return all_results
+
+    def _detect_with_learned_skills(self, text: str, **kwargs) -> List[SkillResult]:
+        """使用边学边用规则进行检测"""
+        from ..logger import logger
+        
+        if not self.learned_skills:
+            return []
+        
+        logger.info(f"========== 边学边用: 使用 {len(self.learned_skills)} 个已学习规则 ==========")
+        
+        results = []
+        for skill in self.learned_skills:
+            try:
+                logger.debug(f"边学边用: 执行规则 {skill.name}")
+                detection_result = skill.detect(text)
+                
+                if detection_result.get("is_triggered"):
+                    logger.info(f"边学边用: 规则[{skill.name}] 触发! category={skill.category}")
+                    
+                    from ..skills.base_skill import Severity
+                    severity_map = {"critical": Severity.CRITICAL, "high": Severity.HIGH, "medium": Severity.MEDIUM, "low": Severity.LOW}
+                    
+                    skill_result = SkillResult(
+                        skill_name=f"learned_{skill.skill_id}",
+                        is_triggered=True,
+                        severity=severity_map.get(skill.severity, Severity.MEDIUM),
+                        category=Category(skill.category),
+                        reason=detection_result.get("reason", ""),
+                        suggestion=skill.suggestion,
+                        evidence={"matched_rules": detection_result.get("matched_rules", [])},
+                        location="全文",
+                        matched_rule=skill.skill_id
+                    )
+                    results.append(skill_result)
+            except Exception as e:
+                logger.error(f"边学边用: 规则 {skill.name} 执行失败: {str(e)}")
+        
+        logger.info(f"边学边用: 检测完成，发现 {len(results)} 个问题")
+        return results
 
     def _detect_with_llm(self, text: str, **kwargs) -> List[SkillResult]:
         """使用 LLM 决策进行检测"""
