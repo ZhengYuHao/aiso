@@ -1,0 +1,76 @@
+{
+  "skill_id": "learned_20260415135344_c3bf5e",
+  "skill_name": "classified_检测到涉密关键词",
+  "metrics": {
+    "precision": 0.875,
+    "recall": 1.0,
+    "f1_score": 0.9333333333333333,
+    "false_positive_rate": 0.3333333333333333,
+    "true_positive_rate": 1.0,
+    "true_positives": [
+      {
+        "text": "涉及关键信息基础设施的业务...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:关键信息基础设施"
+      },
+      {
+        "text": "需要处理个人信息保护相关数据...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:个人信息保护"
+      },
+      {
+        "text": "这是一段包含个人信息保护的测试文本...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:个人信息保护"
+      },
+      {
+        "text": "这是一段包含关键信息基础设施的测试文本...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:关键信息基础设施"
+      },
+      {
+        "text": "文件中含有保密要求信息...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:保密要求"
+      },
+      {
+        "text": "关于关键信息基础设施的说明...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:关键信息基础设施"
+      },
+      {
+        "text": "这是一段包含国家安全的测试文本...",
+        "expected": true,
+        "detected": true,
+        "correct": true,
+        "description": "正例-关键词:国家安全"
+      }
+    ],
+    "false_positives": [
+      {
+        "text": "这个网络安全是误报...",
+        "expected": false,
+        "detected": true,
+        "correct": false,
+        "description": "负例-变体:网络安全"
+      }
+    ],
+    "false_negatives": []
+  },
+  "status": "active",
+  "recommendation": "规则效果良好（F1=0.93），已自动激活使用",
+  "evaluated_at": "2026-04-15T13:53:44.146019",
+  "test_case_count": 10
+}

@@ -1,0 +1,70 @@
+{
+  "skill_id": "learned_20260415135344_c3bf5e",
+  "name": "classified_检测到涉密关键词",
+  "description": "检测到涉密关键词: 国家安全",
+  "category": "classified",
+  "rule_type": "pattern",
+  "rules": [
+    {
+      "type": "keyword",
+      "value": "国家安全",
+      "description": "涉及国家安全的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "网络安全",
+      "description": "与网络安全相关的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "关键信息基础设施",
+      "description": "涉及关键信息基础设施的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "数据安全",
+      "description": "与数据安全相关的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "个人信息保护",
+      "description": "涉及个人信息保护的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "供应链安全",
+      "description": "与供应链安全相关的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "保密要求",
+      "description": "涉及保密要求的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "工作秘密",
+      "description": "涉及工作秘密的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "专项检查",
+      "description": "与专项检查相关的敏感关键词"
+    },
+    {
+      "type": "keyword",
+      "value": "整改台账",
+      "description": "涉及整改台账的敏感关键词"
+    },
+    {
+      "type": "regex",
+      "value": "国家安全|网络安全|关键信息基础设施|数据安全|个人信息保护|供应链安全|保密要求|工作秘密|专项检查|整改台账",
+      "description": "匹配所有敏感关键词的正则表达式"
+    }
+  ],
+  "severity": "critical",
+  "suggestion": "该文件包含涉密关键词，严禁发送至外部 AI 平台",
+  "created_at": "2026-04-15T13:53:44.117633",
+  "usage_count": 0,
+  "accuracy": 0.9333333333333333,
+  "status": "active"
+}
