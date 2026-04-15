@@ -274,7 +274,7 @@ class OCRClient:
                 logger.info(f"OCR 识别完成，识别到 {len(lines)} 行文字")
                 return lines
             else:
-                logger.error(f"OpenAI API 调用失败，状态码: {response.status_code}, 响应: {response.text[:500]}")
+                pass
 
         except Exception:
             pass
