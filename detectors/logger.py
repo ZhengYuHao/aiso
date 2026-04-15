@@ -20,10 +20,10 @@ class CustomFormatter(logging.Formatter):
 
     FORMATS = {
         logging.DEBUG: grey + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s" + reset,
-        logging.INFO: blue + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s" + reset,
-        logging.WARNING: yellow + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s" + reset,
-        logging.ERROR: red + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s" + reset,
-        logging.CRITICAL: bold_red + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s" + reset,
+        logging.INFO: blue + "[%(asctime)s] %(message)s" + reset,
+        logging.WARNING: yellow + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(message)s" + reset,
+        logging.ERROR: red + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(message)s" + reset,
+        logging.CRITICAL: bold_red + "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(message)s" + reset,
     }
 
     def format(self, record):
@@ -67,7 +67,7 @@ def setup_logger(name: str = "aiso", log_dir: str = None, level: int = logging.I
     )
     file_handler.setLevel(level)
     file_formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(module)s:%(lineno)d | %(funcName)s() | %(message)s",
+        "%(asctime)s | %(levelname)-8s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
     file_handler.setFormatter(file_formatter)

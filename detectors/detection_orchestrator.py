@@ -62,9 +62,8 @@ class DetectionOrchestrator:
     def detect_file(self, filepath: str, detection_mode: str = "rule") -> Dict[str, Any]:
         """
         执行完整的文件检测流程
-        detection_mode: "rule" (规则引擎) 或 "llm" (AI智能体)
+        detection_mode: "rule" (在线检测) 或 "llm" (离线学习)
         """
-        logger.info(f"开始检测文件: {filepath}, 检测模式: {detection_mode}")
         total_start = time.time()
         report = {
             "detection_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -84,7 +83,6 @@ class DetectionOrchestrator:
         try:
             full_text, paragraphs, meta = self.parser.parse(filepath)
             report["file_info"] = meta
-            logger.debug(f"文件解析完成: {filepath}, 字符数: {len(full_text)}")
         except Exception as e:
             logger.error(f"文件解析失败: {filepath}, 错误: {str(e)}")
             report["error"] = f"文件解析失败: {str(e)}"
@@ -117,22 +115,28 @@ class DetectionOrchestrator:
         return report
 
     def _detect_with_rules(self, filepath: str, full_text: str, paragraphs: List[Paragraph], report: Dict) -> List[Issue]:
-        """使用规则引擎检测"""
-        logger.info("开始规则引擎检测...")
+        """使用规则引擎检测 (在线检测流程)"""
+        logger.info("==================== [在线检测] ====================")
+        logger.info("[Step 1] 用户操作 上传文件 -> 生成 待检测文档/文本")
+        
         all_issues: List[Issue] = []
 
+        logger.info("[Step 2] Master Agent 权限验证与路由分发 -> 生成 Category调度指令")
+        
+        logger.info("[Step 3] Category Agent 加载已学习的ACTIVE规则 -> 结合预定义规则生成 运行时规则集")
+        
+        logger.info("[Step 4] Category & Skill 多维规则匹配引擎 -> 开始匹配")
         for detector in self.detectors:
             try:
-                logger.debug(f"运行检测器: {detector.name}")
                 if hasattr(detector, 'detect_from_file'):
                     result: DetectionResult = detector.detect_from_file(filepath)
                 else:
                     result: DetectionResult = detector.detect(full_text, paragraphs)
                 report["detection_steps"].append(result.to_dict())
                 all_issues.extend(result.issues)
-                logger.info(f"检测器 {detector.name} 完成，发现问题: {len(result.issues)}")
+                logger.info(f"  - [Skill匹配] {detector.name} 匹配完成，发现问题: {len(result.issues)}")
             except Exception as e:
-                logger.error(f"检测器 {detector.name} 执行失败: {str(e)}")
+                logger.error(f"  - [Skill匹配] {detector.name} 执行失败: {str(e)}")
                 report["detection_steps"].append({
                     "detector_name": detector.name,
                     "error": str(e),
@@ -140,29 +144,26 @@ class DetectionOrchestrator:
                     "issues": [],
                     "scan_time_ms": 0,
                 })
-
+        
+        logger.info(f"[Step 5] 规则匹配结束 -> 准备生成 最终检测结果 (BLOCK/WARNING/PASS)")
         return all_issues
 
     def _detect_with_agent(self, full_text: str, paragraphs: List[Paragraph], report: Dict, use_llm_decision: bool = False) -> List[Issue]:
-        """使用 Agent 架构进行检测"""
-        logger.info(f"========== 开始 Agent 智能体检测 ==========")
-        logger.info(f"文本长度: {len(full_text)}, LLM决策: {use_llm_decision}")
+        """使用 Agent 架构进行检测 (离线学习流程)"""
+        logger.info(f"==================== [离线学习] ====================")
+        logger.info(f"[Step 1] 加载历史样本集 -> 离线样本数据集: 文本长度 {len(full_text)}")
+        logger.info(f"[Step 2] 第1层: Master Agent 调度分配 -> 任务分配数据")
+        logger.info(f"[Step 3] 第2层: Category Agent -> 进行多维度分析 (生成特征数据)")
+        logger.info(f"[Step 4] 第3层: Skill -> 提取具体特征 (生成标识/关键字等数据)")
 
         text_to_check = full_text[:8000] if len(full_text) > 8000 else full_text
 
         skill_results = self.master_agent.detect(text_to_check, use_llm_decision=True)
 
-        logger.info(f">>> Agent 返回 {len(skill_results)} 个 SkillResult")
+        logger.info(f"  - [特征提取完成] 获得 {len(skill_results)} 个有效提取数据")
         
         all_issues = []
         for skill_result in skill_results:
-            logger.info(f"--- 转换 SkillResult -> Issue ---")
-            logger.info(f"skill_name: {skill_result.skill_name}")
-            logger.info(f"category: {skill_result.category.value}")
-            logger.info(f"severity: {skill_result.severity.value}")
-            logger.info(f"is_triggered: {skill_result.is_triggered}")
-            logger.info(f"reason: {skill_result.reason[:100]}...")
-            
             category_map = {
                 "classified": Category.CLASSIFIED,
                 "sensitive": Category.SENSITIVE,
@@ -202,16 +203,12 @@ class DetectionOrchestrator:
                 "skill_result": skill_result.to_dict(),
             })
 
-            logger.info(f">>> Issue 创建成功: category={issue.category.value}, severity={issue.severity.value}")
-
-        logger.info(f"========== Agent 检测完成，发现问题: {len(all_issues)} 个 ==========")
-        
         self._trigger_learning(text_to_check, skill_results)
         
         return all_issues
 
     def _trigger_learning(self, text: str, skill_results: List[Any]):
-        """触发边学边用功能"""
+        """触发边学边用功能 (离线学习后续流程)"""
         try:
             if not skill_results:
                 return
@@ -220,7 +217,7 @@ class DetectionOrchestrator:
             if not triggered_skills:
                 return
             
-            logger.info(f"========== 开始边学边用 ==========")
+            logger.info(f"[Step 5] Learning Agent 总结规律与正则 -> 生成 候选规则集合")
             
             for skill_result in triggered_skills:
                 llm_result = {
@@ -233,13 +230,16 @@ class DetectionOrchestrator:
                 
                 learned = self.learning_agent.analyze_and_learn(text, llm_result)
                 if learned:
-                    logger.info(f"边学边用: 成功学习新规则 [{learned.name}], 等待评估...")
+                    logger.info(f"  - [候选规则生成] {learned.name}")
+                    logger.info(f"[Step 6] Evaluation Agent 评估 (F1≥0.8) -> 尝试存入 ACTIVE规则库")
                     
                     report = self.evaluation_agent.evaluate(learned.skill_id)
                     if report:
-                        logger.info(f"边学边用: 评估完成 [{learned.name}], F1={report.metrics.f1_score:.2f}, 状态={report.status.value}")
-            
-            logger.info(f"========== 边学边用完成 ==========")
+                        if report.status.value == "ACTIVE":
+                            logger.info(f"  - [评估通过] {learned.name}, F1={report.metrics.f1_score:.2f} -> 已存入 ACTIVE规则库")
+                        else:
+                            logger.info(f"  - [评估未通过] {learned.name}, F1={report.metrics.f1_score:.2f} -> 状态为 {report.status.value}")
+
         except Exception as e:
             logger.error(f"边学边用执行失败: {str(e)}")
 

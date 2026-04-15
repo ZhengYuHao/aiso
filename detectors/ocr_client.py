@@ -67,7 +67,7 @@ class OCRClient:
 
     def recognize_pdf(self, pdf_path: str) -> List[Dict]:
         """识别 PDF 中的文字（逐页转图片后识别）"""
-        logger.info(f"开始 OCR 识别 PDF: {pdf_path}, provider: {self.provider}")
+        logger.debug(f"开始 OCR 识别 PDF: {pdf_path}, provider: {self.provider}")
         try:
             from pdf2image import convert_from_path
         except ImportError:
@@ -96,7 +96,7 @@ class OCRClient:
         except Exception as e:
             logger.error(f"PDF OCR 识别异常: {str(e)}")
 
-        logger.info(f"PDF OCR 识别完成，识别页数: {len(results)}")
+        logger.debug(f"PDF OCR 识别完成，识别页数: {len(results)}")
         return results
 
     def recognize_docx_images(self, docx_path: str) -> List[Dict]:
@@ -220,7 +220,7 @@ class OCRClient:
 
     def _recognize_openai(self, image_data: bytes) -> List[str]:
         """OpenAI Vision API (GPT-4o) 识别图片文字"""
-        logger.info("调用 OpenAI Vision API 进行 OCR 识别")
+        logger.debug("调用 OpenAI Vision API 进行 OCR 识别")
         config = self.config.get("openai", {})
         api_key = config.get("api_key", "")
         base_url = config.get("base_url", "https://api.openai.com/v1")
@@ -262,16 +262,16 @@ class OCRClient:
                 "max_tokens": 4096
             }
 
-            logger.info(f"发送 OCR 请求到 OpenAI API, model: {model}")
+            logger.debug(f"发送 OCR 请求到 OpenAI API, model: {model}")
             response = requests.post(url, headers=headers, json=payload, timeout=360)
             logger.debug(f"OpenAI API 响应状态码: {response.status_code}")
 
             if response.status_code == 200:
                 result = response.json()
-                logger.info(f"OpenAI API 返回结果: {json.dumps(result, ensure_ascii=False)[:500]}")
+                logger.debug(f"OpenAI API 返回结果: {json.dumps(result, ensure_ascii=False)[:500]}")
                 text = result["choices"][0]["message"]["content"]
                 lines = [line.strip() for line in text.split('\n') if line.strip()]
-                logger.info(f"OCR 识别完成，识别到 {len(lines)} 行文字")
+                logger.debug(f"OCR 识别完成，识别到 {len(lines)} 行文字")
                 return lines
             else:
                 pass

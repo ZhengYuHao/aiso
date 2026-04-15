@@ -45,7 +45,7 @@ class BaseCategoryAgent(ABC):
     def execute_all(self, text: str, **kwargs) -> List[SkillResult]:
         """执行所有 Skills（不使用 LLM 决策）"""
         from ..logger import logger
-        logger.info(f"{self.name} - 开始执行 {len(self.skills)} 个 Skills...")
+        logger.debug(f"{self.name} - 开始执行 {len(self.skills)} 个 Skills...")
         
         results = []
         for skill in self.skills:
@@ -54,14 +54,14 @@ class BaseCategoryAgent(ABC):
                 result = skill.detect(text, **kwargs)
                 results.append(result)
                 if result.is_triggered:
-                    logger.info(f"{self.name} - Skill[{skill.name}] 触发检测! severity={result.severity.value}, reason={result.reason[:50]}...")
+                    logger.debug(f"{self.name} - Skill[{skill.name}] 触发检测! severity={result.severity.value}, reason={result.reason[:50]}...")
                 else:
                     logger.debug(f"{self.name} - Skill[{skill.name}] 未触发")
             except Exception as e:
                 logger.error(f"{self.name} - Skill {skill.name} 执行失败: {str(e)}")
         
         triggered_count = sum(1 for r in results if r.is_triggered)
-        logger.info(f"{self.name} - Skills 执行完成，共 {len(self.skills)} 个，触发 {triggered_count} 个")
+        logger.debug(f"{self.name} - Skills 执行完成，共 {len(self.skills)} 个，触发 {triggered_count} 个")
         return results
 
     def execute_triggered_only(self, text: str, **kwargs) -> List[SkillResult]:
@@ -86,13 +86,13 @@ class BaseCategoryAgent(ABC):
 
         try:
             result = llm_client._call_openai(prompt)
-            logger.info(f"{self.name} - LLM 技能选择返回: {result[:300]}")
+            logger.debug(f"{self.name} - LLM 技能选择返回: {result[:300]}")
 
             match = re.search(r'\{[\s\S]*\}', result)
             if match:
                 decision = json.loads(match.group())
                 selected_skills = decision.get("skills", [])
-                logger.info(f"{self.name} - LLM 选择的技能: {selected_skills}")
+                logger.debug(f"{self.name} - LLM 选择的技能: {selected_skills}")
 
                 results = []
                 for skill in self.skills:

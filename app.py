@@ -45,11 +45,9 @@ def secure_filename_cn(filename: str) -> str:
 def process_single_file(file_obj, detection_mode: str = "rule") -> dict:
     """处理单个文件"""
     original_name = file_obj.filename
-    logger.info(f"开始处理文件: {original_name}, 检测模式: {detection_mode}")
 
     if not allowed_file(original_name):
         ext = original_name.rsplit(".", 1)[-1] if "." in original_name else "未知"
-        logger.warning(f"不支持的文件格式: .{ext}")
         return {
             "filename": original_name,
             "error": f"不支持的文件格式 .{ext}，仅支持 .docx / .txt / .pdf",
@@ -61,12 +59,10 @@ def process_single_file(file_obj, detection_mode: str = "rule") -> dict:
 
     try:
         file_obj.save(filepath)
-        logger.debug(f"文件保存成功: {filepath}")
 
         file_size = os.path.getsize(filepath)
         if file_size > MAX_FILE_SIZE:
             os.remove(filepath)
-            logger.warning(f"文件大小超限: {original_name}, 大小: {file_size / 1024 / 1024:.1f}MB")
             return {
                 "filename": original_name,
                 "error": f"文件大小 {file_size / 1024 / 1024:.1f}MB 超过限制 5MB",
@@ -75,7 +71,6 @@ def process_single_file(file_obj, detection_mode: str = "rule") -> dict:
 
         if file_size == 0:
             os.remove(filepath)
-            logger.warning(f"文件为空: {original_name}")
             return {
                 "filename": original_name,
                 "error": "文件为空",
@@ -91,11 +86,9 @@ def process_single_file(file_obj, detection_mode: str = "rule") -> dict:
         }
 
     try:
-        logger.info(f"开始检测文件: {original_name}")
         report = orchestrator.detect_file(filepath, detection_mode=detection_mode)
         report["filename"] = original_name
         report["detection_mode"] = detection_mode
-        logger.info(f"文件检测完成: {original_name}, 判定: {report.get('overall_verdict')}, 问题数: {report.get('issues_count', 0)}")
 
         log_filename = f"{safe_name}.json"
         log_path = os.path.join(LOG_DIR, log_filename)
@@ -138,10 +131,6 @@ def upload_and_detect():
     if detection_mode not in ["rule", "llm"]:
         detection_mode = "rule"
 
-    logger.info(f"收到上传请求，检测模式: {detection_mode}")
-
-    logger.info(f"开始处理 {len(files)} 个文件，检测模式: {detection_mode}")
-
     results = []
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -151,7 +140,7 @@ def upload_and_detect():
             try:
                 result = future.result()
                 results.append(result)
-                logger.info(f"文件处理完成: {result.get('filename', 'unknown')}, 判定: {result.get('overall_verdict', 'unknown')}")
+                logger.info(f"==================== [处理结束] {result.get('filename', 'unknown')} 判定: {result.get('overall_verdict', 'unknown')} ====================")
             except Exception as e:
                 file_obj = futures[future]
                 results.append({

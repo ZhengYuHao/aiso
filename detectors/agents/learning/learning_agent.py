@@ -59,10 +59,10 @@ class LearningAgent:
         if not is_sensitive:
             return None
 
-        logger.info(f"LearningAgent 开始学习: category={category}, reason={reason[:50]}...")
+        logger.debug(f"LearningAgent 开始学习: category={category}, reason={reason[:50]}...")
 
         if self._skill_exists(category, reason):
-            logger.info(f"已存在相似规则，跳过学习")
+            logger.debug(f"已存在相似规则，跳过学习")
             return None
 
         rules = self._generate_rules(text, llm_result)
@@ -75,7 +75,7 @@ class LearningAgent:
             return None
 
         if self.skill_manager.save_skill(skill):
-            logger.info(f"成功保存学习到的 Skill: {skill.name} (ID: {skill.skill_id})")
+            logger.debug(f"成功保存学习到的 Skill: {skill.name} (ID: {skill.skill_id})")
             return skill
         else:
             logger.error(f"保存 Skill 失败: {skill.name}")

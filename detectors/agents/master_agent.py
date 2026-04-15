@@ -81,35 +81,35 @@ class MasterAgent:
             use_llm_decision: 是否使用 LLM 决策
         """
         from ..logger import logger
-        logger.info(f"========== Master Agent 开始检测 ==========")
-        logger.info(f"文本长度: {len(text)}, LLM决策: {use_llm_decision}")
+        logger.debug(f"========== Master Agent 开始检测 ==========")
+        logger.debug(f"文本长度: {len(text)}, LLM决策: {use_llm_decision}")
 
         all_results = []
 
         if use_llm_decision and self.llm_client:
-            logger.info(">>> 使用 LLM 智能决策模式 <<<")
+            logger.debug(">>> 使用 LLM 智能决策模式 <<<")
             all_results = self._detect_with_llm(text, **kwargs)
         else:
-            logger.info(">>> 使用规则引擎模式 <<<")
+            logger.debug(">>> 使用规则引擎模式 <<<")
             for agent in self.category_agents:
                 try:
-                    logger.info(f"--- 调度 Category Agent: {agent.name} ---")
-                    logger.info(f"该分类包含 {len(agent.skills)} 个 Skills: {[s.name for s in agent.skills]}")
+                    logger.debug(f"--- 调度 Category Agent: {agent.name} ---")
+                    logger.debug(f"该分类包含 {len(agent.skills)} 个 Skills: {[s.name for s in agent.skills]}")
                     results = agent.execute_triggered_only(text, **kwargs)
                     if results:
-                        logger.info(f"[{agent.name}] 发现问题: {len(results)} 个")
+                        logger.debug(f"[{agent.name}] 发现问题: {len(results)} 个")
                         for r in results:
-                            logger.info(f"  >>> Skill[{r.skill_name}] 触发! category={r.category.value}, severity={r.severity.value}")
-                            logger.info(f"  >>> reason: {r.reason[:80]}...")
+                            logger.debug(f"  >>> Skill[{r.skill_name}] 触发! category={r.category.value}, severity={r.severity.value}")
+                            logger.debug(f"  >>> reason: {r.reason[:80]}...")
                         all_results.extend(results)
                     else:
-                        logger.info(f"[{agent.name}] 未发现问题")
+                        logger.debug(f"[{agent.name}] 未发现问题")
                 except Exception as e:
                     logger.error(f"Category Agent {agent.name} 执行失败: {str(e)}")
 
         all_results.extend(self._detect_with_learned_skills(text, **kwargs))
 
-        logger.info(f"========== Master Agent 检测完成，总发现问题: {len(all_results)} 个 ==========")
+        logger.debug(f"========== Master Agent 检测完成，总发现问题: {len(all_results)} 个 ==========")
         return all_results
 
     def _detect_with_learned_skills(self, text: str, **kwargs) -> List[SkillResult]:
@@ -119,7 +119,7 @@ class MasterAgent:
         if not self.learned_skills:
             return []
         
-        logger.info(f"========== 边学边用: 使用 {len(self.learned_skills)} 个已学习规则 ==========")
+        logger.debug(f"========== 边学边用: 使用 {len(self.learned_skills)} 个已学习规则 ==========")
         
         results = []
         for skill in self.learned_skills:
@@ -128,7 +128,7 @@ class MasterAgent:
                 detection_result = skill.detect(text)
                 
                 if detection_result.get("is_triggered"):
-                    logger.info(f"边学边用: 规则[{skill.name}] 触发! category={skill.category}")
+                    logger.debug(f"边学边用: 规则[{skill.name}] 触发! category={skill.category}")
                     
                     from ..skills.base_skill import Severity
                     severity_map = {"critical": Severity.CRITICAL, "high": Severity.HIGH, "medium": Severity.MEDIUM, "low": Severity.LOW}
@@ -148,13 +148,13 @@ class MasterAgent:
             except Exception as e:
                 logger.error(f"边学边用: 规则 {skill.name} 执行失败: {str(e)}")
         
-        logger.info(f"边学边用: 检测完成，发现 {len(results)} 个问题")
+        logger.debug(f"边学边用: 检测完成，发现 {len(results)} 个问题")
         return results
 
     def _detect_with_llm(self, text: str, **kwargs) -> List[SkillResult]:
         """使用 LLM 决策进行检测"""
         from ..logger import logger
-        logger.info("使用 LLM 智能决策检测...")
+        logger.debug("使用 LLM 智能决策检测...")
 
         categories_str = self.get_category_summaries()
         skills_str = self._get_all_skills_summaries()
@@ -169,17 +169,17 @@ class MasterAgent:
 
         try:
             result = self.llm_client._call_openai(prompt)
-            logger.info(f"LLM 决策返回: {result[:500]}")
+            logger.debug(f"LLM 决策返回: {result[:500]}")
 
             decision = self._parse_llm_decision(result)
-            logger.info(f"LLM 决策结果: {decision}")
+            logger.debug(f"LLM 决策结果: {decision}")
 
             if not decision.get("need_detect", True):
-                logger.info("LLM 决策：无需检测")
+                logger.debug("LLM 决策：无需检测")
                 return []
 
             selected_categories = decision.get("categories", [])
-            logger.info(f"LLM 选择的检测类别: {selected_categories}")
+            logger.debug(f"LLM 选择的检测类别: {selected_categories}")
 
         except Exception as e:
             logger.error(f"LLM 决策失败，回退到规则检测: {str(e)}")
@@ -190,16 +190,16 @@ class MasterAgent:
             category_key = agent.category.value
             if selected_categories is None or category_key in selected_categories:
                 try:
-                    logger.info(f"执行 Category Agent: {agent.name}")
+                    logger.debug(f"执行 Category Agent: {agent.name}")
                     if selected_categories:
                         results = agent.execute_with_llm(text, self.llm_client, **kwargs)
                     else:
                         results = agent.execute_triggered_only(text, **kwargs)
                     if results:
-                        logger.info(f"{agent.name} 发现问题: {len(results)} 个")
+                        logger.debug(f"{agent.name} 发现问题: {len(results)} 个")
                         all_results.extend(results)
                     else:
-                        logger.info(f"{agent.name} 未发现问题")
+                        logger.debug(f"{agent.name} 未发现问题")
                 except Exception as e:
                     logger.error(f"Category Agent {agent.name} 执行失败: {str(e)}")
 
@@ -229,7 +229,7 @@ class MasterAgent:
     def detect_all_skills(self, text: str, **kwargs) -> List[SkillResult]:
         """执行所有 Skills（不做决策，全部执行）"""
         from ..logger import logger
-        logger.info("Master Agent 开始全量检测...")
+        logger.debug("Master Agent 开始全量检测...")
 
         all_results = []
 

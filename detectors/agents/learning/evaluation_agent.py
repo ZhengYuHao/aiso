@@ -60,7 +60,7 @@ class EvaluationAgent:
             logger.warning(f"Skill 不存在: {skill_id}")
             return None
 
-        logger.info(f"开始评估 Skill: {skill.name} (ID: {skill_id})")
+        logger.debug(f"开始评估 Skill: {skill.name} (ID: {skill_id})")
 
         test_cases = self._generate_test_cases(skill)
         if len(test_cases) < 5:
@@ -90,7 +90,7 @@ class EvaluationAgent:
 
         self._save_report(report)
         
-        logger.info(f"评估完成: {skill.name}, F1={metrics.f1_score:.2f}, status={status.value}")
+        logger.debug(f"评估完成: {skill.name}, F1={metrics.f1_score:.2f}, status={status.value}")
         
         return report
 
